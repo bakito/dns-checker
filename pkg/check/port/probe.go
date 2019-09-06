@@ -7,6 +7,7 @@ import (
 	"go.ocp.six-group.net/opspoc/dns-checker/pkg/check"
 )
 
+// New create a new port probe check
 func New(target, port string) check.Check {
 	c := &probeCheck{target: target, port: port}
 	c.Setup("Probe was successful",

@@ -2,6 +2,7 @@ package check
 
 import "time"
 
+// Execute execute the given checks
 func Execute(checks ...Check) {
 	for _, c := range checks {
 		start := time.Now()

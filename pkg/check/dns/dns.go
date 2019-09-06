@@ -7,6 +7,7 @@ import (
 	"go.ocp.six-group.net/opspoc/dns-checker/pkg/check"
 )
 
+// New create a new dns resolve check
 func New(target string) check.Check {
 	c := &dnsCheck{target: target}
 	c.Setup("Host resolved to %s",

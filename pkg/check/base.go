@@ -8,6 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// BaseCheck basic check functionality
 type BaseCheck struct {
 	MessageOK      string
 	MessageNOK     string
@@ -16,6 +17,7 @@ type BaseCheck struct {
 	labels         []string
 }
 
+// Setup setup the check
 func (c *BaseCheck) Setup(ok string, nok string, metricName string, metricHelp string, labels ...string) {
 	c.StateMetric = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Name: metricName,
@@ -30,6 +32,7 @@ func (c *BaseCheck) Setup(ok string, nok string, metricName string, metricHelp s
 	c.MessageNOK = nok
 }
 
+// ReportResults report the check results
 func (c *BaseCheck) ReportResults(result []interface{}, err error, duration float64, values ...string) {
 
 	fields := log.Fields{}
