@@ -12,7 +12,7 @@ func New(target, port string) check.Check {
 	c := &probeCheck{target: target, port: port}
 	c.Setup("Probe was successful",
 		"Error probing: %v",
-		"six_dns_checker_probe_port",
+		"dns_checker_probe_port",
 		"Result of port probe 0 = error, 1 = OK",
 		"target", "port")
 	return c

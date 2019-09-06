@@ -12,7 +12,7 @@ func New(target string) check.Check {
 	c := &dnsCheck{target: target}
 	c.Setup("Host resolved to %s",
 		"Error resolving host: %v",
-		"six_dns_checker_check_dns",
+		"dns_checker_check_dns",
 		"Result of DNS check 0 = error, 1 = OK",
 		"target")
 	return c
