@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"go.ocp.six-group.net/opspoc/dns-checker/pkg/check/port"
 	"net/http"
 	"os"
 	"strconv"
@@ -9,11 +10,9 @@ import (
 
 	"go.ocp.six-group.net/opspoc/dns-checker/pkg/check"
 
-	"go.ocp.six-group.net/opspoc/dns-checker/pkg/check/dns"
-	"go.ocp.six-group.net/opspoc/dns-checker/pkg/check/port"
-
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
+	"go.ocp.six-group.net/opspoc/dns-checker/pkg/check/dns"
 )
 
 var (
@@ -42,8 +41,6 @@ func init() {
 	}
 	if tp, exists := os.LookupEnv("TARGET_PORT"); exists {
 		targetPort = tp
-	} else {
-		panic(fmt.Errorf("env var TARGET_PORT is needed"))
 	}
 	if i, exists := os.LookupEnv("INTERVAL"); exists {
 		ii, err := strconv.Atoi(i)
@@ -59,14 +56,19 @@ func main() {
 	recordMetrics()
 
 	http.Handle("/metrics", promhttp.Handler())
-	log.Infof("Checking %s on port %s", target, targetPort)
 	log.Infof("Interval is %d seconds", interval)
 	log.Infof("Starting on port %s", metricsPort)
 	_ = http.ListenAndServe(fmt.Sprintf(":%s", metricsPort), nil)
 }
 
 func recordMetrics() {
-	checks := []check.Check{dns.New(target), port.New(target, targetPort)}
+	checks := []check.Check{dns.New(target)}
+	if targetPort != "" {
+		log.Infof("Checking %s on port %s", target, targetPort)
+		checks = append(checks, port.New(target, targetPort))
+	} else {
+		log.Infof("Checking %s", target)
+	}
 	go func() {
 		for {
 			log.Info("checking...")
