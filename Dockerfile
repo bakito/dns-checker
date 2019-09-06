@@ -1,11 +1,11 @@
 FROM golang:1.13 as builder
 
-WORKDIR /go/src/github.com/bakito/dns-checker
-
-COPY . /go/src/github.com/bakito/dns-checker/
+WORKDIR /build
 
 RUN apt-get update && apt-get install -y xz-utils && \
   curl -SL --fail --silent --show-error https://github.com/upx/upx/releases/download/v3.95/upx-3.95-amd64_linux.tar.xz | tar --wildcards -xJ --strip-components 1 */upx
+
+COPY . .
 
 ENV GOPROXY=https://goproxy.io \
     GO111MODULE=on \
@@ -25,4 +25,4 @@ EXPOSE 2112
 USER 1001
 ENTRYPOINT ["/go/bin/dns-checker"]
 
-COPY --from=builder /go/src/github.com/bakito/dns-checker/dns-checker /go/bin/dns-checker
+COPY --from=builder /build/dns-checker /go/bin/dns-checker

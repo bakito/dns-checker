@@ -1,4 +1,4 @@
-module go.ocp.six-group.net/opspoc/dns-checker
+module github.com/bakito/dns-checker
 
 go 1.13
 

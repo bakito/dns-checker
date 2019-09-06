@@ -4,7 +4,7 @@ import (
 	"net"
 	"strings"
 
-	"go.ocp.six-group.net/opspoc/dns-checker/pkg/check"
+	"github.com/bakito/dns-checker/pkg/check"
 )
 
 // New create a new dns resolve check

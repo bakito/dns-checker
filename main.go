@@ -2,17 +2,16 @@ package main
 
 import (
 	"fmt"
-	"go.ocp.six-group.net/opspoc/dns-checker/pkg/check/port"
 	"net/http"
 	"os"
 	"strconv"
 	"time"
 
-	"go.ocp.six-group.net/opspoc/dns-checker/pkg/check"
-
+	"github.com/bakito/dns-checker/pkg/check"
+	"github.com/bakito/dns-checker/pkg/check/dns"
+	"github.com/bakito/dns-checker/pkg/check/port"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
-	"go.ocp.six-group.net/opspoc/dns-checker/pkg/check/dns"
 )
 
 var (
