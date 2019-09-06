@@ -1,0 +1,4 @@
+.idea
+*.iml
+dns-checker*
+openshift
