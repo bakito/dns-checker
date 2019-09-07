@@ -25,20 +25,20 @@ type dnsCheck struct {
 
 func (c *dnsCheck) Execute() ([]interface{}, error) {
 	ips, err := net.LookupIP(c.target)
-	return toString(ips), err
+	return c.ToResult(toString(ips)), err
 }
 
 func (c *dnsCheck) Report(result []interface{}, err error, duration float64) {
 	c.ReportResults(result, err, duration, c.target)
 }
 
-func toString(ips []net.IP) []interface{} {
+func toString(ips []net.IP) string {
 	if ips == nil {
-		return []interface{}{""}
+		return ""
 	}
 	var s []string
 	for _, ip := range ips {
 		s = append(s, ip.String())
 	}
-	return []interface{}{strings.Join(s, ",")}
+	return strings.Join(s, ",")
 }

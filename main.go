@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/bakito/dns-checker/pkg/check/manualdns"
+
 	"github.com/bakito/dns-checker/pkg/check"
 	"github.com/bakito/dns-checker/pkg/check/dns"
 	"github.com/bakito/dns-checker/pkg/check/port"
@@ -68,6 +70,11 @@ func recordMetrics() {
 	} else {
 		log.Infof("Checking %s", target)
 	}
+
+	if dnsHost, exists := os.LookupEnv("MANUAL_DNS_HOST"); exists {
+		checks = append(checks, manualdns.New(target, dnsHost))
+	}
+
 	go func() {
 		for {
 			log.Info("checking...")

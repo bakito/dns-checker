@@ -14,6 +14,7 @@ type BaseCheck struct {
 	MessageNOK     string
 	StateMetric    *prometheus.GaugeVec
 	DurationMetric *prometheus.GaugeVec
+	name           string
 	labels         []string
 }
 
@@ -27,6 +28,7 @@ func (c *BaseCheck) Setup(ok string, nok string, metricName string, metricHelp s
 		Name: fmt.Sprintf("%s_duration", metricName),
 		Help: fmt.Sprintf("The duration of %s in ms", metricName),
 	}, labels)
+	c.name = metricName
 	c.labels = labels
 	c.MessageOK = ok
 	c.MessageNOK = nok
@@ -36,6 +38,7 @@ func (c *BaseCheck) Setup(ok string, nok string, metricName string, metricHelp s
 func (c *BaseCheck) ReportResults(result []interface{}, err error, duration float64, values ...string) {
 
 	fields := log.Fields{}
+	fields["name"] = c.name
 	fields["duration"] = fmt.Sprintf("%vms", duration)
 	for i, v := range values {
 		fields[c.labels[i]] = v
@@ -50,4 +53,9 @@ func (c *BaseCheck) ReportResults(result []interface{}, err error, duration floa
 		c.StateMetric.WithLabelValues(values...).Set(1)
 	}
 	c.DurationMetric.WithLabelValues(values...).Set(duration)
+}
+
+// ToResult maps to interface array
+func (c *BaseCheck) ToResult(values ...interface{}) []interface{} {
+	return values
 }
