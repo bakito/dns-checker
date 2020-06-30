@@ -8,8 +8,8 @@ COPY . .
 ENV GOPROXY=https://goproxy.io \
     GO111MODULE=on \
     CGO_ENABLED=0 \
-    GOOS=linux \
-    GOARCH=amd64
+    GOARCH={{ .GoARCH }} \
+    GOARM={{ .GoARM }}
 
 RUN go build -a -installsuffix cgo -ldflags="-w -s" -o dns-checker && \
     upx --ultra-brute -q dns-checker

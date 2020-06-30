@@ -1,4 +1,5 @@
 .idea
 *.iml
+*.exe
 dns-checker*
 openshift
