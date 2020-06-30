@@ -30,8 +30,9 @@ func (c *BaseCheck) Setup(ok string, nok string, metricName string, metricHelp s
 		Help: fmt.Sprintf("The duration of %s in ms", metricName),
 	}, labels)
 	c.SummaryMetric = promauto.NewSummaryVec(prometheus.SummaryOpts{
-		Name: fmt.Sprintf("%s_summary", metricName),
-		Help: fmt.Sprintf("The duration of resolver lookups %s in ms and percentiles", metricName),
+		Name:       fmt.Sprintf("%s_summary", metricName),
+		Help:       fmt.Sprintf("The duration of resolver lookups %s in ms and percentiles", metricName),
+		Objectives: map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001},
 	}, labels)
 	c.name = metricName
 	c.labels = labels
