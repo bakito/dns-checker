@@ -5,12 +5,12 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
-
-	"github.com/bakito/dns-checker/pkg/check/manualdns"
 
 	"github.com/bakito/dns-checker/pkg/check"
 	"github.com/bakito/dns-checker/pkg/check/dns"
+	"github.com/bakito/dns-checker/pkg/check/manualdns"
 	"github.com/bakito/dns-checker/pkg/check/port"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
@@ -19,8 +19,7 @@ import (
 var (
 	logLevel    = log.InfoLevel
 	metricsPort = "2112"
-	targetPort  string
-	target      string
+	targets     []string
 	interval    time.Duration = 30
 )
 
@@ -36,12 +35,21 @@ func init() {
 		metricsPort = p
 	}
 	if t, exists := os.LookupEnv("TARGET"); exists {
-		target = t
+		inputTargets := strings.Split(t, ";")
+		for _, t := range inputTargets {
+			targets = append(targets, strings.TrimSpace(t))
+		}
 	} else {
 		panic(fmt.Errorf("env var TARGET is needed"))
 	}
 	if tp, exists := os.LookupEnv("TARGET_PORT"); exists {
-		targetPort = tp
+		if len(targets) == 1 {
+			old := targets[0]
+			if strings.Contains(old, ":") {
+				targets[0] = fmt.Sprintf("%s:%s", old, tp)
+			}
+		}
+
 	}
 	if i, exists := os.LookupEnv("INTERVAL"); exists {
 		ii, err := strconv.Atoi(i)
@@ -63,16 +71,21 @@ func main() {
 }
 
 func recordMetrics() {
-	checks := []check.Check{dns.New(target)}
-	if targetPort != "" {
-		log.Infof("Checking %s on port %s", target, targetPort)
-		checks = append(checks, port.New(target, targetPort))
-	} else {
-		log.Infof("Checking %s", target)
-	}
+	var checks []check.Check
+	for _, t := range targets {
+		hostPort := strings.Split(t, ":")
+		checks = append(checks, dns.New(hostPort[0]))
+		if len(hostPort) == 2 {
+			log.Infof("Checking %s on port %s", hostPort[0], hostPort[1])
+			checks = append(checks, port.New(hostPort[0], hostPort[1]))
+		} else if len(hostPort) == 1 {
+			log.Infof("Checking %s", hostPort[0])
+		}
 
-	if dnsHost, exists := os.LookupEnv("MANUAL_DNS_HOST"); exists {
-		checks = append(checks, manualdns.New(target, dnsHost))
+		if dnsHost, exists := os.LookupEnv("MANUAL_DNS_HOST"); exists {
+			checks = append(checks, manualdns.New(hostPort[0], dnsHost))
+		}
+
 	}
 
 	go func() {

@@ -1,11 +1,13 @@
 package manualdns
 
 import (
+	"context"
+
 	"github.com/bakito/dns-checker/pkg/check"
 )
 
 // New create a new dns resolve check
-func New(target, dnsHost string) check.Check {
+func New(target string, dnsHost string) check.Check {
 	c := &dnsCheck{target: target}
 	c.Setup("%s",
 		"Error resolving host: %v",
@@ -34,7 +36,7 @@ type dnsCheck struct {
 	query   []byte
 }
 
-func (c *dnsCheck) Execute() ([]interface{}, error) {
+func (c *dnsCheck) Execute(ctx context.Context) ([]interface{}, error) {
 	result, err := resolve(c.query, c.dnsHost)
 	return c.ToResult(result), err
 }

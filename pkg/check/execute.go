@@ -1,6 +1,9 @@
 package check
 
-import "time"
+import (
+	"context"
+	"time"
+)
 
 // Execute execute the given checks
 func Execute(checks ...Check) {
@@ -11,7 +14,8 @@ func Execute(checks ...Check) {
 
 func execute(check Check) {
 	start := time.Now()
-	result, err := check.Execute()
+	ctx := context.Background()
+	result, err := check.Execute(ctx)
 	elapsed := time.Since(start)
 	dur := float64(elapsed.Nanoseconds()) / 1000000.
 

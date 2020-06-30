@@ -1,6 +1,7 @@
 package dns
 
 import (
+	"context"
 	"net"
 	"strings"
 
@@ -23,7 +24,7 @@ type dnsCheck struct {
 	target string
 }
 
-func (c *dnsCheck) Execute() ([]interface{}, error) {
+func (c *dnsCheck) Execute(ctx context.Context) ([]interface{}, error) {
 	ips, err := net.LookupIP(c.target)
 	return c.ToResult(toString(ips)), err
 }

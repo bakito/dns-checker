@@ -1,6 +1,7 @@
 package port
 
 import (
+	"context"
 	"fmt"
 	"net"
 
@@ -24,7 +25,7 @@ type probeCheck struct {
 	port   string
 }
 
-func (c *probeCheck) Execute() ([]interface{}, error) {
+func (c *probeCheck) Execute(ctx context.Context) ([]interface{}, error) {
 	conn, err := net.Dial("tcp", fmt.Sprintf("%v:%v", c.target, c.port))
 	if conn != nil {
 		_ = conn.Close()
