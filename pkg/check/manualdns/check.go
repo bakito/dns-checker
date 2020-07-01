@@ -7,16 +7,24 @@ import (
 )
 
 // New create a new dns resolve check
-func New(target string, dnsHost string) check.Check {
-	c := &dnsCheck{target: target}
+func New(dnsHost string) check.Check {
+	c := &dnsCheck{}
 	c.Setup("%s",
 		"Error resolving host: %v",
 		"dns_checker_check_manual_dns",
 		"Result of DNS check 0 = error, 1 = OK",
 		"target")
 	c.dnsHost = dnsHost
+	return c
+}
 
-	c.query = dnsQuery{
+type dnsCheck struct {
+	check.BaseCheck
+	dnsHost string
+}
+
+func (c *dnsCheck) query(target string) []byte {
+	return dnsQuery{
 		ID: 0xAAAA,
 		RD: true,
 		Questions: []dnsQuestion{{
@@ -25,23 +33,14 @@ func New(target string, dnsHost string) check.Check {
 			Class:  0x1, // Internet
 		}},
 	}.encode()
-
-	return c
 }
 
-type dnsCheck struct {
-	check.BaseCheck
-	target  string
-	dnsHost string
-	query   []byte
-}
+func (c *dnsCheck) Run(ctx context.Context, target string, port *int) (bool, []string, error) {
+	result, err := resolve(c.query(target), c.dnsHost)
+	if err != nil {
+		return true, []string{target}, err
+	}
 
-func (c *dnsCheck) Execute(ctx context.Context) ([]interface{}, error) {
-	result, err := resolve(c.query, c.dnsHost)
-	return c.ToResult(result), err
-}
-
-func (c *dnsCheck) Report(result []interface{}, err error, duration float64) {
-	r, e := responseCode(result[0].(byte))
-	c.ReportResults(c.ToResult(r), e, duration, c.target)
+	_, err = responseCode(result)
+	return true, []string{target}, err
 }

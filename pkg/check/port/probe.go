@@ -9,8 +9,8 @@ import (
 )
 
 // New create a new port probe check
-func New(target, port string) check.Check {
-	c := &probeCheck{target: target, port: port}
+func New() check.Check {
+	c := &probeCheck{}
 	c.Setup("Probe was successful",
 		"Error probing: %v",
 		"dns_checker_probe_port",
@@ -21,18 +21,15 @@ func New(target, port string) check.Check {
 
 type probeCheck struct {
 	check.BaseCheck
-	target string
-	port   string
 }
 
-func (c *probeCheck) Execute(ctx context.Context) ([]interface{}, error) {
-	conn, err := net.Dial("tcp", fmt.Sprintf("%v:%v", c.target, c.port))
+func (c *probeCheck) Run(ctx context.Context, target string, port *int) (bool, []string, error) {
+	if port == nil {
+		return false, nil, nil
+	}
+	conn, err := net.Dial("tcp", fmt.Sprintf("%v:%v", target, *port))
 	if conn != nil {
 		_ = conn.Close()
 	}
-	return nil, err
-}
-
-func (c *probeCheck) Report(result []interface{}, err error, duration float64) {
-	c.ReportResults(result, err, duration, c.target, c.port)
+	return true, []string{target, fmt.Sprintf("%d", *port)}, err
 }
