@@ -27,7 +27,8 @@ func (c *probeCheck) Run(ctx context.Context, target string, port *int) (bool, [
 	if port == nil {
 		return false, nil, nil
 	}
-	conn, err := net.Dial("tcp", fmt.Sprintf("%v:%v", target, *port))
+	var d net.Dialer
+	conn, err := d.DialContext(ctx, "tcp", fmt.Sprintf("%v:%v", target, *port))
 	if conn != nil {
 		_ = conn.Close()
 	}

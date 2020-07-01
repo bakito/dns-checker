@@ -36,7 +36,7 @@ func (c *dnsCheck) query(target string) []byte {
 }
 
 func (c *dnsCheck) Run(ctx context.Context, target string, port *int) (bool, []string, error) {
-	result, err := resolve(c.query(target), c.dnsHost)
+	result, err := resolve(ctx, c.query(target), c.dnsHost)
 	if err != nil {
 		return true, []string{target}, err
 	}

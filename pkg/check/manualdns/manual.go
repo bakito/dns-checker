@@ -5,13 +5,13 @@ package manualdns
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"encoding/binary"
 	"errors"
 	"fmt"
 	"log"
 	"net"
 	"strings"
-	"time"
 )
 
 /*
@@ -124,17 +124,15 @@ func (q dnsQuestion) encode() []byte {
 
 }
 
-func resolve(query []byte, dnsServer string) (byte, error) {
+func resolve(ctx context.Context, query []byte, dnsServer string) (byte, error) {
 	// Setup a UDP connection
-	conn, err := net.Dial("udp", dnsServer)
+	var d net.Dialer
+	conn, err := d.DialContext(ctx, "udp", dnsServer)
 	if err != nil {
 		return 0, fmt.Errorf("failed to connect: %v", err)
 	}
 	defer conn.Close()
 
-	if err := conn.SetDeadline(time.Now().Add(15 * time.Second)); err != nil {
-		return 0, fmt.Errorf("failed to set deadline: %v", err)
-	}
 	_, _ = conn.Write(query)
 
 	encodedAnswer := make([]byte, len(query))

@@ -50,7 +50,7 @@ func (c *BaseCheck) Report(target string, port *int, result Result) {
 
 	fields := log.Fields{}
 	fields["name"] = c.name
-	fields["duration"] = fmt.Sprintf("%dms", result.Duration)
+	fields["duration"] = fmt.Sprintf("%vms", result.Duration)
 
 	for i, v := range result.Values {
 		fields[c.labels[i]] = v
