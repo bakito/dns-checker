@@ -10,22 +10,6 @@ type Check interface {
 	Report(target string, port *int, result Result)
 }
 
-func NewExecution(check Check, target string, port *int) Execution {
-	return Execution{
-		Target: target,
-		Port:   port,
-		Check:  check,
-		Result: Result{},
-	}
-}
-
-type Execution struct {
-	Check  Check
-	Target string
-	Port   *int
-	Result Result
-}
-
 type Result struct {
 	Values   []string
 	Duration float64

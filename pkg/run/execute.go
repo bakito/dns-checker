@@ -20,13 +20,8 @@ const (
 	dnsCallTimeout = 5 * time.Second
 )
 
-type targetPort struct {
-	target string
-	port   *int
-}
-
 func Check(targets []string, interval time.Duration) {
-	var targetPorts []targetPort
+	var targetPorts []tp
 	checks := []check.Check{dns.New(), port.New()}
 
 	if dnsHost, exists := os.LookupEnv("MANUAL_DNS_HOST"); exists {
@@ -36,7 +31,7 @@ func Check(targets []string, interval time.Duration) {
 	for _, t := range targets {
 		hostPort := strings.Split(t, ":")
 
-		target := targetPort{target: hostPort[0]}
+		target := tp{target: hostPort[0]}
 		if len(hostPort) == 2 {
 			p, err := strconv.Atoi(hostPort[1])
 			if err == nil {
@@ -56,7 +51,7 @@ func Check(targets []string, interval time.Duration) {
 	signal.Notify(sigChan, os.Interrupt)
 	ctx, cancel := context.WithCancel(context.Background())
 
-	execChan := make(chan check.Execution)
+	execChan := make(chan execution)
 	go handleResults(ctx, execChan)
 
 	ticker := time.NewTicker(interval)
@@ -74,11 +69,11 @@ func Check(targets []string, interval time.Duration) {
 	}
 }
 
-func handleResults(ctx context.Context, ex chan check.Execution) {
+func handleResults(ctx context.Context, ex chan execution) {
 	for {
 		select {
 		case e := <-ex:
-			e.Check.Report(e.Target, e.Port, e.Result)
+			e.check.Report(e.target, e.port, e.Result)
 
 		case <-ctx.Done():
 			return
@@ -86,7 +81,7 @@ func handleResults(ctx context.Context, ex chan check.Execution) {
 	}
 }
 
-func runChecks(ctx context.Context, resultsChan chan check.Execution, targets []targetPort, checks []check.Check) {
+func runChecks(ctx context.Context, resultsChan chan execution, targets []tp, checks []check.Check) {
 	var wg sync.WaitGroup
 
 	for _, target := range targets {
@@ -105,11 +100,11 @@ func runChecks(ctx context.Context, resultsChan chan check.Execution, targets []
 				elapsed := time.Since(start)
 
 				if executed {
-					ex := check.NewExecution(chk, target.target, target.port)
-					ex.Result.Values = values
-					ex.Result.Duration = float64(elapsed.Nanoseconds()) / 1000000.
-					ex.Result.Err = err
-					ex.Result.TimedOut = err == context.Canceled
+					ex := newExecution(chk, target.target, target.port)
+					ex.Values = values
+					ex.Duration = float64(elapsed.Nanoseconds()) / 1000000.
+					ex.Err = err
+					ex.TimedOut = err == context.Canceled
 					resultsChan <- ex
 				}
 			}(target.target)
