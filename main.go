@@ -14,7 +14,6 @@ import (
 
 const (
 	envTarget      = "TARGET"
-	envTargetPort  = "TARGET_PORT"
 	envMetricsPort = "METRICS_PORT"
 	envLogLevel    = "LOG_LEVEL"
 	envInterval    = "INTERVAL"
@@ -47,15 +46,6 @@ func init() {
 		}
 	} else {
 		panic(fmt.Errorf("env var %s is needed", envTarget))
-	}
-	if tp, exists := os.LookupEnv(envTargetPort); exists {
-		if len(targets) == 1 {
-			old := targets[0]
-			if strings.Contains(old, ":") {
-				targets[0] = fmt.Sprintf("%s:%s", old, tp)
-			}
-		}
-
 	}
 	if i, exists := os.LookupEnv(envInterval); exists {
 		ii, err := time.ParseDuration(i)
