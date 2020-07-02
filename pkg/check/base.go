@@ -82,10 +82,10 @@ func (c *BaseCheck) Report(target string, port *int, result Result) {
 
 	l := log.WithFields(fields)
 	if result.Err != nil {
-		l.Warnf(c.MessageNOK, result.Err)
+		l.Warnf("%s : %v", c.MessageNOK, result.Err)
 		c.StateMetric.WithLabelValues(result.Values...).Set(0)
 	} else {
-		l.Debugf(c.MessageOK, result.valuesAsInterface()...)
+		l.Debug(c.MessageOK)
 		c.StateMetric.WithLabelValues(result.Values...).Set(1)
 	}
 	c.DurationMetric.WithLabelValues(result.Values...).Set(result.Duration)

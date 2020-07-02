@@ -23,7 +23,7 @@ var (
 	logLevel    = log.InfoLevel
 	metricsPort = "2112"
 	targets     []string
-	interval    time.Duration = 30
+	interval    = 30 * time.Second
 )
 
 func init() {

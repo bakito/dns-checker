@@ -17,11 +17,3 @@ type Result struct {
 	Err      error
 	TimedOut bool
 }
-
-func (r *Result) valuesAsInterface() []interface{} {
-	var out []interface{}
-	for _, r := range r.Values {
-		out = append(out, r)
-	}
-	return out
-}
