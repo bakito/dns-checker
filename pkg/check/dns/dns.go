@@ -3,14 +3,16 @@ package dns
 import (
 	"context"
 	"net"
+	"time"
 
 	"github.com/bakito/dns-checker/pkg/check"
 )
 
 // New create a new dns resolve check
-func New() check.Check {
+func New(interval time.Duration) check.Check {
 	c := &dnsCheck{}
-	c.Setup("Host resolved",
+	c.Setup(interval,
+		"Host resolved",
 		"Error resolving host",
 		"dns_checker_check_dns",
 		"Result of DNS check 0 = error, 1 = OK",

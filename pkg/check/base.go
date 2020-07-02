@@ -5,6 +5,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
@@ -44,7 +45,7 @@ type BaseCheck struct {
 }
 
 // Setup setup the check
-func (c *BaseCheck) Setup(ok string, nok string, metricName string, metricHelp string, labels ...string) {
+func (c *BaseCheck) Setup(interval time.Duration, ok string, nok string, metricName string, metricHelp string, labels ...string) {
 	c.StateMetric = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Name: metricName,
 		Help: metricHelp,
@@ -61,7 +62,7 @@ func (c *BaseCheck) Setup(ok string, nok string, metricName string, metricHelp s
 	c.HistogramMetric = promauto.NewHistogramVec(prometheus.HistogramOpts{
 		Name:    fmt.Sprintf("%s_histogram", metricName),
 		Help:    fmt.Sprintf("The duration of resolver lookups %s in ms and percentiles", metricName),
-		Buckets: buckets(),
+		Buckets: buckets(interval),
 	}, labels)
 	c.name = metricName
 	c.labels = labels
@@ -130,11 +131,11 @@ func objectives() map[float64]float64 {
 	return currObjectives
 }
 
-func buckets() []float64 {
+func buckets(interval time.Duration) []float64 {
 	if currBuckets != nil {
 		return currBuckets
 	}
-	currBuckets = defaultBuckets
+	currBuckets = filter(defaultBuckets, interval)
 
 	if value, exists := os.LookupEnv(envMetricHistogramBuckets); exists {
 		var custom []float64
@@ -148,8 +149,19 @@ func buckets() []float64 {
 			}
 			custom = append(custom, a)
 		}
-		currBuckets = custom
+		currBuckets = filter(custom, interval)
 		return currBuckets
 	}
 	return currBuckets
+}
+
+func filter(bucket []float64, interval time.Duration) []float64 {
+	var filtered []float64
+	sec := interval.Seconds()
+	for _, b := range bucket {
+		if b <= sec {
+			filtered = append(filtered, b)
+		}
+	}
+	return filtered
 }

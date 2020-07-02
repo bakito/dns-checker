@@ -3,14 +3,16 @@ package manualdns
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/bakito/dns-checker/pkg/check"
 )
 
 // New create a new dns resolve check
-func New(dnsHost string) check.Check {
+func New(dnsHost string, interval time.Duration) check.Check {
 	c := &dnsCheck{}
-	c.Setup(fmt.Sprintf("Host resolved with dns server %s", dnsHost),
+	c.Setup(interval,
+		fmt.Sprintf("Host resolved with dns server %s", dnsHost),
 		fmt.Sprintf("Error resolving host with dns server %s", dnsHost),
 		"dns_checker_check_manual_dns",
 		"Result of DNS check 0 = error, 1 = OK",

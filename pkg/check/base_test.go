@@ -3,6 +3,7 @@ package check
 import (
 	"os"
 	"testing"
+	"time"
 
 	"gotest.tools/assert"
 	is "gotest.tools/assert/cmp"
@@ -11,15 +12,27 @@ import (
 func Test_buckets(t *testing.T) {
 	bucketTestData := []struct {
 		env      string
+		interval time.Duration
 		expected []float64
 	}{
 		{"",
+			5 * time.Second,
+			[]float64{0.002, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5},
+		},
+		{"",
+			30 * time.Second,
 			defaultBuckets,
 		},
 		{"foo",
+			30 * time.Second,
 			defaultBuckets,
 		},
 		{"0.05,0.1,0.25  ,  0.5,1,2.5",
+			1 * time.Second,
+			[]float64{0.05, 0.1, 0.25, 0.5, 1},
+		},
+		{"0.05,0.1,0.25  ,  0.5,1,2.5",
+			30 * time.Second,
 			[]float64{0.05, 0.1, 0.25, 0.5, 1, 2.5},
 		},
 	}
@@ -32,7 +45,7 @@ func Test_buckets(t *testing.T) {
 		}
 
 		currBuckets = nil
-		b := buckets()
+		b := buckets(data.interval)
 
 		assert.Assert(t, is.DeepEqual(b, data.expected))
 		assert.Assert(t, is.DeepEqual(b, currBuckets))

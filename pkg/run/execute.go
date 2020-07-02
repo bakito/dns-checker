@@ -33,10 +33,10 @@ func Check(values []string, interval time.Duration) error {
 		return err
 	}
 
-	checks := []check.Check{dns.New(), port.New()}
+	checks := []check.Check{dns.New(interval), port.New(interval)}
 
 	if dnsHost, exists := os.LookupEnv("MANUAL_DNS_HOST"); exists {
-		checks = append(checks, manualdns.New(dnsHost))
+		checks = append(checks, manualdns.New(dnsHost, interval))
 	}
 
 	sigChan := make(chan os.Signal, 1)
