@@ -1,15 +1,15 @@
 package dns
 
 import (
+	"context"
 	"net"
-	"strings"
 
 	"github.com/bakito/dns-checker/pkg/check"
 )
 
 // New create a new dns resolve check
-func New(target string) check.Check {
-	c := &dnsCheck{target: target}
+func New() check.Check {
+	c := &dnsCheck{}
 	c.Setup("Host resolved to %s",
 		"Error resolving host: %v",
 		"dns_checker_check_dns",
@@ -20,25 +20,9 @@ func New(target string) check.Check {
 
 type dnsCheck struct {
 	check.BaseCheck
-	target string
 }
 
-func (c *dnsCheck) Execute() ([]interface{}, error) {
-	ips, err := net.LookupIP(c.target)
-	return c.ToResult(toString(ips)), err
-}
-
-func (c *dnsCheck) Report(result []interface{}, err error, duration float64) {
-	c.ReportResults(result, err, duration, c.target)
-}
-
-func toString(ips []net.IP) string {
-	if ips == nil {
-		return ""
-	}
-	var s []string
-	for _, ip := range ips {
-		s = append(s, ip.String())
-	}
-	return strings.Join(s, ",")
+func (c *dnsCheck) Run(ctx context.Context, target string, port *int) (bool, []string, error) {
+	_, err := net.DefaultResolver.LookupHost(ctx, target)
+	return true, []string{target}, err
 }

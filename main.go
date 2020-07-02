@@ -4,83 +4,65 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"strconv"
+	"strings"
 	"time"
 
-	"github.com/bakito/dns-checker/pkg/check/manualdns"
-
-	"github.com/bakito/dns-checker/pkg/check"
-	"github.com/bakito/dns-checker/pkg/check/dns"
-	"github.com/bakito/dns-checker/pkg/check/port"
+	"github.com/bakito/dns-checker/pkg/run"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
+)
+
+const (
+	envTarget      = "TARGET"
+	envMetricsPort = "METRICS_PORT"
+	envLogLevel    = "LOG_LEVEL"
+	envInterval    = "INTERVAL"
 )
 
 var (
 	logLevel    = log.InfoLevel
 	metricsPort = "2112"
-	targetPort  string
-	target      string
+	targets     []string
 	interval    time.Duration = 30
 )
 
 func init() {
 	var err error
-	if ll, exists := os.LookupEnv("LOG_LEVEL"); exists {
+	if ll, exists := os.LookupEnv(envLogLevel); exists {
 		logLevel, err = log.ParseLevel(ll)
 		if err != nil {
 			panic(fmt.Errorf("error parsing log level"))
 		}
 	}
-	if p, exists := os.LookupEnv("METRICS_PORT"); exists {
+	log.SetLevel(logLevel)
+
+	if p, exists := os.LookupEnv(envMetricsPort); exists {
 		metricsPort = p
 	}
-	if t, exists := os.LookupEnv("TARGET"); exists {
-		target = t
-	} else {
-		panic(fmt.Errorf("env var TARGET is needed"))
-	}
-	if tp, exists := os.LookupEnv("TARGET_PORT"); exists {
-		targetPort = tp
-	}
-	if i, exists := os.LookupEnv("INTERVAL"); exists {
-		ii, err := strconv.Atoi(i)
-		if err != nil {
-			panic(fmt.Errorf("env var TARGET_PORT is needed"))
+	if t, exists := os.LookupEnv(envTarget); exists {
+		inputTargets := strings.Split(t, ";")
+		for _, t := range inputTargets {
+			targets = append(targets, strings.TrimSpace(t))
 		}
-		interval = time.Duration(ii)
+	} else {
+		panic(fmt.Errorf("env var %s is needed", envTarget))
 	}
-	log.SetLevel(logLevel)
+	if i, exists := os.LookupEnv(envInterval); exists {
+		interval, err = time.ParseDuration(i)
+		if err != nil {
+			panic(fmt.Errorf("env var %s %q can not be parsed as duration", envInterval, i))
+		}
+	}
+	log.Infof("Interval is %v", interval)
 }
 
 func main() {
-	recordMetrics()
-
-	http.Handle("/metrics", promhttp.Handler())
-	log.Infof("Interval is %d seconds", interval)
-	log.Infof("Starting on port %s", metricsPort)
-	_ = http.ListenAndServe(fmt.Sprintf(":%s", metricsPort), nil)
+	go serveMetrics()
+	run.Check(targets, interval)
 }
 
-func recordMetrics() {
-	checks := []check.Check{dns.New(target)}
-	if targetPort != "" {
-		log.Infof("Checking %s on port %s", target, targetPort)
-		checks = append(checks, port.New(target, targetPort))
-	} else {
-		log.Infof("Checking %s", target)
-	}
-
-	if dnsHost, exists := os.LookupEnv("MANUAL_DNS_HOST"); exists {
-		checks = append(checks, manualdns.New(target, dnsHost))
-	}
-
-	go func() {
-		for {
-			log.Info("checking...")
-
-			check.Execute(checks...)
-			time.Sleep(interval * time.Second)
-		}
-	}()
+func serveMetrics() {
+	log.Infof("Starting metrics on port %s", metricsPort)
+	http.Handle("/metrics", promhttp.Handler())
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", metricsPort), nil))
 }
