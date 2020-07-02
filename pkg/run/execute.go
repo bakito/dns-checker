@@ -20,6 +20,7 @@ const (
 	dnsCallTimeout = 5 * time.Second
 )
 
+// Check run the checks
 func Check(targets []string, interval time.Duration) {
 	var targetPorts []tp
 	checks := []check.Check{dns.New(), port.New()}

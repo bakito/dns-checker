@@ -10,6 +10,7 @@ type Check interface {
 	Report(target string, port *int, result Result)
 }
 
+// Result check result
 type Result struct {
 	Values   []string
 	Duration float64

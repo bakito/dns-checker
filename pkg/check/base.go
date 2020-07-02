@@ -27,8 +27,8 @@ var (
 	defaultObjectives = map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001}
 	defaultBuckets    = []float64{0.002, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, 20}
 
-	currObjectives map[float64]float64 = nil
-	currBuckets    []float64           = nil
+	currObjectives map[float64]float64
+	currBuckets    []float64
 )
 
 // BaseCheck basic check functionality
@@ -69,7 +69,7 @@ func (c *BaseCheck) Setup(ok string, nok string, metricName string, metricHelp s
 	c.MessageNOK = nok
 }
 
-// ReportResults report the check results
+// Report report the check results
 func (c *BaseCheck) Report(target string, port *int, result Result) {
 
 	fields := log.Fields{}
