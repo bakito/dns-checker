@@ -26,11 +26,11 @@ import (
 */
 
 type dnsQuery struct {
-	ID     uint16 // An arbitary 16 bit request identifier (same id is used in the response)
+	ID     uint16 // An arbitrary 16 bit request identifier (same id is used in the response)
 	QR     bool   // A 1 bit flat specifying whether this message is a query (0) or a response (1)
 	Opcode uint8  // A 4 bit fields that specifies the query type; 0 (standard), 1 (inverse), 2 (status), 4 (notify), 5 (update)
 
-	AA           bool  // Authoriative answer
+	AA           bool  // Authoritative answer
 	TC           bool  // 1 bit flag specifying if the message has been truncated
 	RD           bool  // 1 bit flag to specify if recursion is desired (if the DNS server we secnd out request to doesn't know the answer to our query, it can recursively ask other DNS servers)
 	RA           bool  // Recursive available
@@ -158,7 +158,7 @@ func responseCode(responseCode byte) (string, error) {
 	case 3:
 		return "", errors.New("non-existent domain")
 	case 9:
-		return "", errors.New("server not authorative for zone")
+		return "", errors.New("server not authoritative for zone")
 	case 10:
 		return "", errors.New("name not in zone")
 	default:
