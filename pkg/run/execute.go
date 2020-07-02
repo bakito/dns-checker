@@ -47,7 +47,7 @@ func Check(targets []string, interval time.Duration) {
 		targetPorts = append(targetPorts, target)
 	}
 
-	sigChan := make(chan os.Signal)
+	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt)
 	ctx, cancel := context.WithCancel(context.Background())
 
