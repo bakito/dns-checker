@@ -93,11 +93,6 @@ func (c *BaseCheck) Report(result Result) {
 	c.HistogramMetric.WithLabelValues(result.Values...).Observe(result.Duration)
 }
 
-// ToResult maps to interface array
-func (c *BaseCheck) ToResult(values ...interface{}) []interface{} {
-	return values
-}
-
 func objectives() map[float64]float64 {
 	if currObjectives != nil {
 		return currObjectives
@@ -111,19 +106,23 @@ func objectives() map[float64]float64 {
 		for _, o := range objectives {
 			objective := strings.Split(o, ":")
 			if len(objective) == 2 {
-				a, err := strconv.ParseFloat(objective[0], 64)
+				a, err := strconv.ParseFloat(strings.TrimSpace(objective[0]), 64)
 				if err != nil {
 					log.WithFields(log.Fields{"env": envMetricSummaryObjectives, "value": value, "default": defaultObjectives}).
 						Warn("could not parse the objectives, using the default")
 					return currObjectives
 				}
-				b, err := strconv.ParseFloat(objective[1], 64)
+				b, err := strconv.ParseFloat(strings.TrimSpace(objective[1]), 64)
 				if err != nil {
 					log.WithFields(log.Fields{"env": envMetricSummaryObjectives, "value": value, "default": defaultObjectives}).
 						Warn("could not parse the objectives, using the default")
 					return currObjectives
 				}
 				custom[a] = b
+			} else {
+				log.WithFields(log.Fields{"env": envMetricSummaryObjectives, "value": value, "default": defaultObjectives}).
+					Warn("could not parse the objectives, using the default")
+				return currObjectives
 			}
 		}
 		currObjectives = custom
@@ -141,7 +140,7 @@ func buckets() []float64 {
 		var custom []float64
 		objectives := strings.Split(value, separator)
 		for _, o := range objectives {
-			a, err := strconv.ParseFloat(o, 64)
+			a, err := strconv.ParseFloat(strings.TrimSpace(o), 64)
 			if err != nil {
 				log.WithFields(log.Fields{"env": envMetricHistogramBuckets, "value": value, "default": defaultBuckets}).
 					Warn("could not parse the buckets, using the default")
