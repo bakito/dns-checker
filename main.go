@@ -24,10 +24,10 @@ const (
 )
 
 var (
-	logLevel    = log.InfoLevel
-	metricsPort = "2112"
-	targets     []check.Address
-	interval    = 30 * time.Second
+	logLevel         = log.InfoLevel
+	metricsPort      = "2112"
+	targetsAddresses []check.Address
+	interval         = 30 * time.Second
 
 	targetEnvVarPattern = regexp.MustCompile(`^\${(.*)}$`)
 )
@@ -45,10 +45,13 @@ func init() {
 	if p, exists := os.LookupEnv(envMetricsPort); exists {
 		metricsPort = p
 	}
-	if t, exists := os.LookupEnv(envTarget); exists {
-		inputTargets := strings.Split(t, ",")
-		for _, t := range inputTargets {
-			targets = append(targets, toTarget(t))
+	values := findTargets()
+	if len(values) > 0 {
+		for _, value := range values {
+			targets := strings.Split(value, ",")
+			for _, t := range targets {
+				targetsAddresses = append(targetsAddresses, toTarget(t))
+			}
 		}
 	} else {
 		panic(fmt.Errorf("env var %s is needed", envTarget))
@@ -64,7 +67,7 @@ func init() {
 
 func main() {
 	go serveMetrics()
-	run.Check(targets, interval)
+	run.Check(targetsAddresses, interval)
 }
 
 func serveMetrics() {
@@ -99,4 +102,15 @@ func fromEnv(in string) string {
 		return os.Getenv(match[1])
 	}
 	return in
+}
+
+func findTargets() []string {
+	var targets []string
+	for _, e := range os.Environ() {
+		pair := strings.SplitN(e, "=", 2)
+		if strings.HasPrefix(pair[0], envTarget) {
+			targets = append(targets, pair[1])
+		}
+	}
+	return targets
 }
