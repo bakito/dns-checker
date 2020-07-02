@@ -57,7 +57,10 @@ func main() {
 	if len(values) == 0 {
 		panic(fmt.Errorf("env var %s is needed", envTarget))
 	}
-	run.Check(values, interval)
+	err := run.Check(values, interval)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func serveMetrics() {

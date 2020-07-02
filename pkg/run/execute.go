@@ -27,19 +27,10 @@ var (
 )
 
 // Check run the checks
-func Check(values []string, interval time.Duration) {
-	var targetsAddresses []check.Address
-	for _, value := range values {
-		targets := strings.Split(value, ",")
-		for _, t := range targets {
-			target := toTarget(t)
-			if target.Port != nil {
-				log.Infof("Setup check for %s on port %d", target.Host, *target.Port)
-			} else {
-				log.Infof("Setup check for %s", target.Host)
-			}
-			targetsAddresses = append(targetsAddresses, target)
-		}
+func Check(values []string, interval time.Duration) error {
+	targetsAddresses, err := toTargets(values)
+	if err != nil {
+		return err
 	}
 
 	checks := []check.Check{dns.New(), port.New()}
@@ -65,9 +56,29 @@ func Check(values []string, interval time.Duration) {
 
 		case <-sigChan:
 			cancel()
-			return
+			return nil
 		}
 	}
+}
+
+func toTargets(values []string) ([]check.Address, error) {
+	var targetsAddresses []check.Address
+	for _, value := range values {
+		targets := strings.Split(value, ",")
+		for _, t := range targets {
+			target, err := toTarget(t)
+			if err != nil {
+				return nil, err
+			}
+			if target.Port != nil {
+				log.Infof("Setup check for %s on port %d", target.Host, *target.Port)
+			} else {
+				log.Infof("Setup check for %s", target.Host)
+			}
+			targetsAddresses = append(targetsAddresses, target)
+		}
+	}
+	return targetsAddresses, nil
 }
 
 func handleResults(ctx context.Context, ex chan execution) {
@@ -114,24 +125,24 @@ func runChecks(ctx context.Context, resultsChan chan execution, targets []check.
 	wg.Wait()
 }
 
-func toTarget(in string) check.Address {
+func toTarget(in string) (check.Address, error) {
 	hp := strings.Split(strings.TrimSpace(in), ":")
 
 	host := fromEnv(strings.TrimSpace(hp[0]))
 
 	addr := check.Address{Host: host}
 	if len(hp) == 1 {
-		return addr
+		return addr, nil
 	}
 
 	port := fromEnv(strings.TrimSpace(hp[1]))
 
 	p, err := strconv.Atoi(port)
 	if err != nil {
-		panic(fmt.Errorf("port %q of host %q can not be parsed as int", port, host))
+		return addr, fmt.Errorf("port %q of host %q can not be parsed as int", port, host)
 	}
 	addr.Port = &p
-	return addr
+	return addr, nil
 }
 
 func fromEnv(in string) string {
