@@ -12,6 +12,14 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const (
+	envTarget      = "TARGET"
+	envTargetPort  = "TARGET_PORT"
+	envMetricsPort = "METRICS_PORT"
+	envLogLevel    = "LOG_LEVEL"
+	envInterval    = "INTERVAL"
+)
+
 var (
 	logLevel    = log.InfoLevel
 	metricsPort = "2112"
@@ -21,7 +29,7 @@ var (
 
 func init() {
 	var err error
-	if ll, exists := os.LookupEnv("LOG_LEVEL"); exists {
+	if ll, exists := os.LookupEnv(envLogLevel); exists {
 		logLevel, err = log.ParseLevel(ll)
 		if err != nil {
 			panic(fmt.Errorf("error parsing log level"))
@@ -29,18 +37,18 @@ func init() {
 	}
 	log.SetLevel(logLevel)
 
-	if p, exists := os.LookupEnv("METRICS_PORT"); exists {
+	if p, exists := os.LookupEnv(envMetricsPort); exists {
 		metricsPort = p
 	}
-	if t, exists := os.LookupEnv("TARGET"); exists {
+	if t, exists := os.LookupEnv(envTarget); exists {
 		inputTargets := strings.Split(t, ";")
 		for _, t := range inputTargets {
 			targets = append(targets, strings.TrimSpace(t))
 		}
 	} else {
-		panic(fmt.Errorf("env var TARGET is needed"))
+		panic(fmt.Errorf("env var %s is needed", envTarget))
 	}
-	if tp, exists := os.LookupEnv("TARGET_PORT"); exists {
+	if tp, exists := os.LookupEnv(envTargetPort); exists {
 		if len(targets) == 1 {
 			old := targets[0]
 			if strings.Contains(old, ":") {
@@ -49,10 +57,10 @@ func init() {
 		}
 
 	}
-	if i, exists := os.LookupEnv("INTERVAL"); exists {
+	if i, exists := os.LookupEnv(envInterval); exists {
 		ii, err := time.ParseDuration(i)
 		if err != nil {
-			panic(fmt.Errorf("env var INTERVAL can not be parsed as duration"))
+			panic(fmt.Errorf("env var %s %q can not be parsed as duration", envInterval, i))
 		}
 		interval = time.Duration(ii)
 	}
