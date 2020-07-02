@@ -5,11 +5,8 @@ import (
 	"net/http"
 	"os"
 	"regexp"
-	"strconv"
 	"strings"
 	"time"
-
-	"github.com/bakito/dns-checker/pkg/check"
 
 	"github.com/bakito/dns-checker/pkg/run"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -24,10 +21,9 @@ const (
 )
 
 var (
-	logLevel         = log.InfoLevel
-	metricsPort      = "2112"
-	targetsAddresses []check.Address
-	interval         = 30 * time.Second
+	logLevel    = log.InfoLevel
+	metricsPort = "2112"
+	interval    = 30 * time.Second
 
 	targetEnvVarPattern = regexp.MustCompile(`^\${(.*)}$`)
 )
@@ -45,17 +41,6 @@ func init() {
 	if p, exists := os.LookupEnv(envMetricsPort); exists {
 		metricsPort = p
 	}
-	values := findTargets()
-	if len(values) > 0 {
-		for _, value := range values {
-			targets := strings.Split(value, ",")
-			for _, t := range targets {
-				targetsAddresses = append(targetsAddresses, toTarget(t))
-			}
-		}
-	} else {
-		panic(fmt.Errorf("env var %s is needed", envTarget))
-	}
 	if i, exists := os.LookupEnv(envInterval); exists {
 		interval, err = time.ParseDuration(i)
 		if err != nil {
@@ -67,41 +52,18 @@ func init() {
 
 func main() {
 	go serveMetrics()
-	run.Check(targetsAddresses, interval)
+
+	values := findTargets()
+	if len(values) == 0 {
+		panic(fmt.Errorf("env var %s is needed", envTarget))
+	}
+	run.Check(values, interval)
 }
 
 func serveMetrics() {
 	log.Infof("Starting metrics on port %s", metricsPort)
 	http.Handle("/metrics", promhttp.Handler())
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", metricsPort), nil))
-}
-
-func toTarget(in string) check.Address {
-	hp := strings.Split(strings.TrimSpace(in), ":")
-
-	host := fromEnv(strings.TrimSpace(hp[0]))
-
-	addr := check.Address{Host: host}
-	if len(hp) == 1 {
-		return addr
-	}
-
-	port := fromEnv(strings.TrimSpace(hp[1]))
-
-	p, err := strconv.Atoi(port)
-	if err != nil {
-		panic(fmt.Errorf("port %q of host %q can not be parsed as int", port, host))
-	}
-	addr.Port = &p
-	return addr
-}
-
-func fromEnv(in string) string {
-	if targetEnvVarPattern.MatchString(in) {
-		match := targetEnvVarPattern.FindStringSubmatch(in)
-		return os.Getenv(match[1])
-	}
-	return in
 }
 
 func findTargets() []string {
