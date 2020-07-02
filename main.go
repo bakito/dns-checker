@@ -48,11 +48,10 @@ func init() {
 		panic(fmt.Errorf("env var %s is needed", envTarget))
 	}
 	if i, exists := os.LookupEnv(envInterval); exists {
-		ii, err := time.ParseDuration(i)
+		interval, err = time.ParseDuration(i)
 		if err != nil {
 			panic(fmt.Errorf("env var %s %q can not be parsed as duration", envInterval, i))
 		}
-		interval = time.Duration(ii)
 	}
 	log.Infof("Interval is %v", interval)
 }
