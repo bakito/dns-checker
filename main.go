@@ -4,8 +4,12 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"regexp"
+	"strconv"
 	"strings"
 	"time"
+
+	"github.com/bakito/dns-checker/pkg/check"
 
 	"github.com/bakito/dns-checker/pkg/run"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -22,8 +26,10 @@ const (
 var (
 	logLevel    = log.InfoLevel
 	metricsPort = "2112"
-	targets     []string
+	targets     []check.Address
 	interval    = 30 * time.Second
+
+	targetEnvVarPattern = regexp.MustCompile(`^\${(.*)}$`)
 )
 
 func init() {
@@ -40,9 +46,9 @@ func init() {
 		metricsPort = p
 	}
 	if t, exists := os.LookupEnv(envTarget); exists {
-		inputTargets := strings.Split(t, ";")
+		inputTargets := strings.Split(t, ",")
 		for _, t := range inputTargets {
-			targets = append(targets, strings.TrimSpace(t))
+			targets = append(targets, toTarget(t))
 		}
 	} else {
 		panic(fmt.Errorf("env var %s is needed", envTarget))
@@ -65,4 +71,32 @@ func serveMetrics() {
 	log.Infof("Starting metrics on port %s", metricsPort)
 	http.Handle("/metrics", promhttp.Handler())
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", metricsPort), nil))
+}
+
+func toTarget(in string) check.Address {
+	hp := strings.Split(strings.TrimSpace(in), ":")
+
+	host := fromEnv(strings.TrimSpace(hp[0]))
+
+	addr := check.Address{Host: host}
+	if len(hp) == 1 {
+		return addr
+	}
+
+	port := fromEnv(strings.TrimSpace(hp[1]))
+
+	p, err := strconv.Atoi(port)
+	if err != nil {
+		panic(fmt.Errorf("port %q of host %q can not be parsed as int", port, host))
+	}
+	addr.Port = &p
+	return addr
+}
+
+func fromEnv(in string) string {
+	if targetEnvVarPattern.MatchString(in) {
+		match := targetEnvVarPattern.FindStringSubmatch(in)
+		return os.Getenv(match[1])
+	}
+	return in
 }

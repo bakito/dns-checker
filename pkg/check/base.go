@@ -70,7 +70,7 @@ func (c *BaseCheck) Setup(ok string, nok string, metricName string, metricHelp s
 }
 
 // Report report the check results
-func (c *BaseCheck) Report(target string, port *int, result Result) {
+func (c *BaseCheck) Report(result Result) {
 
 	fields := log.Fields{}
 	fields["name"] = c.name

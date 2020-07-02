@@ -10,8 +10,8 @@ import (
 // New create a new dns resolve check
 func New() check.Check {
 	c := &dnsCheck{}
-	c.Setup("Host resolved to %s",
-		"Error resolving host: %v",
+	c.Setup("Host resolved",
+		"Error resolving host",
 		"dns_checker_check_dns",
 		"Result of DNS check 0 = error, 1 = OK",
 		"target")
@@ -22,7 +22,7 @@ type dnsCheck struct {
 	check.BaseCheck
 }
 
-func (c *dnsCheck) Run(ctx context.Context, target string, port *int) (bool, []string, error) {
-	_, err := net.DefaultResolver.LookupHost(ctx, target)
-	return true, []string{target}, err
+func (c *dnsCheck) Run(ctx context.Context, address check.Address) (bool, []string, error) {
+	_, err := net.DefaultResolver.LookupHost(ctx, address.Host)
+	return true, []string{address.Host}, err
 }

@@ -14,7 +14,7 @@ docker run -p 2112:2112 -e TARGET=<target-host> quay.io/bakito/dns-checker
 ## Env Variables
 | Name | Description | Required | Default 
 | :---: | --- | :---: | :---: |
-| TARGET | The DNS target hosts to check. ',' separated host(:port) list | X |  |
+| TARGET | The DNS target hosts to check. ',' separated host(:port) list. Env variables can be used here with notation '${ENV_VAR_NAME}' | X |  |
 | INTERVAL | The check intercal in seconds | O | 30 |
 | METRICS_PORT | The port for the metrics service | O | 2112 |
 | LOG_LEVEL | The log level (panic, fatal, error, warn, info, debug, trace)| O | info |

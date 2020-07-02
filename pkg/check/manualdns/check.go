@@ -2,6 +2,7 @@ package manualdns
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/bakito/dns-checker/pkg/check"
 )
@@ -9,8 +10,8 @@ import (
 // New create a new dns resolve check
 func New(dnsHost string) check.Check {
 	c := &dnsCheck{}
-	c.Setup("%s",
-		"Error resolving host: %v",
+	c.Setup(fmt.Sprintf("Host resolved with dns server %s", dnsHost),
+		fmt.Sprintf("Error resolving host with dns server %s", dnsHost),
 		"dns_checker_check_manual_dns",
 		"Result of DNS check 0 = error, 1 = OK",
 		"target")
@@ -35,12 +36,12 @@ func (c *dnsCheck) query(target string) []byte {
 	}.encode()
 }
 
-func (c *dnsCheck) Run(ctx context.Context, target string, port *int) (bool, []string, error) {
-	result, err := resolve(ctx, c.query(target), c.dnsHost)
+func (c *dnsCheck) Run(ctx context.Context, address check.Address) (bool, []string, error) {
+	result, err := resolve(ctx, c.query(address.Host), c.dnsHost)
 	if err != nil {
-		return true, []string{target}, err
+		return true, []string{address.Host}, err
 	}
 
 	_, err = responseCode(result)
-	return true, []string{target}, err
+	return true, []string{address.Host}, err
 }

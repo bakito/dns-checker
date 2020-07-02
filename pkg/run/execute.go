@@ -4,8 +4,6 @@ import (
 	"context"
 	"os"
 	"os/signal"
-	"strconv"
-	"strings"
 	"sync"
 	"time"
 
@@ -21,31 +19,20 @@ const (
 )
 
 // Check run the checks
-func Check(targets []string, interval time.Duration) {
-	var targetPorts []tp
+func Check(targets []check.Address, interval time.Duration) {
 	checks := []check.Check{dns.New(), port.New()}
 
 	if dnsHost, exists := os.LookupEnv("MANUAL_DNS_HOST"); exists {
 		checks = append(checks, manualdns.New(dnsHost))
 	}
 
-	for _, t := range targets {
-		hostPort := strings.Split(t, ":")
+	for _, target := range targets {
 
-		target := tp{target: hostPort[0]}
-		if len(hostPort) == 2 {
-			p, err := strconv.Atoi(hostPort[1])
-			if err == nil {
-				target.port = &p
-			}
-		}
-
-		if target.port != nil {
-			log.Infof("Setup check for %s on port %d", target.target, *target.port)
+		if target.Port != nil {
+			log.Infof("Setup check for %s on port %d", target.Host, *target.Port)
 		} else {
-			log.Infof("Setup check for %s", target.target)
+			log.Infof("Setup check for %s", target.Host)
 		}
-		targetPorts = append(targetPorts, target)
 	}
 
 	sigChan := make(chan os.Signal, 1)
@@ -61,7 +48,7 @@ func Check(targets []string, interval time.Duration) {
 	for {
 		select {
 		case <-ticker.C:
-			runChecks(ctx, execChan, targetPorts, checks)
+			runChecks(ctx, execChan, targets, checks)
 
 		case <-sigChan:
 			cancel()
@@ -74,7 +61,7 @@ func handleResults(ctx context.Context, ex chan execution) {
 	for {
 		select {
 		case e := <-ex:
-			e.check.Report(e.target, e.port, e.Result)
+			e.check.Report(e.Result)
 
 		case <-ctx.Done():
 			return
@@ -82,14 +69,14 @@ func handleResults(ctx context.Context, ex chan execution) {
 	}
 }
 
-func runChecks(ctx context.Context, resultsChan chan execution, targets []tp, checks []check.Check) {
+func runChecks(ctx context.Context, resultsChan chan execution, targets []check.Address, checks []check.Check) {
 	var wg sync.WaitGroup
 
-	for _, target := range targets {
+	for _, t := range targets {
 		for i := range checks {
 			chk := checks[i]
 			wg.Add(1)
-			go func(host string) {
+			go func(target check.Address) {
 				defer wg.Done()
 
 				ctx, cancel := context.WithTimeout(ctx, dnsCallTimeout)
@@ -97,18 +84,18 @@ func runChecks(ctx context.Context, resultsChan chan execution, targets []tp, ch
 
 				start := time.Now()
 
-				executed, values, err := chk.Run(ctx, target.target, target.port)
+				executed, values, err := chk.Run(ctx, target)
 				elapsed := time.Since(start)
 
 				if executed {
-					ex := newExecution(chk, target.target, target.port)
+					ex := newExecution(chk, target)
 					ex.Values = values
 					ex.Duration = float64(elapsed.Nanoseconds()) / 1000000.
 					ex.Err = err
 					ex.TimedOut = err == context.Canceled
 					resultsChan <- ex
 				}
-			}(target.target)
+			}(t)
 		}
 	}
 	wg.Wait()

@@ -6,8 +6,8 @@ import (
 
 // Check interface for checks
 type Check interface {
-	Run(ctx context.Context, target string, port *int) (bool, []string, error)
-	Report(target string, port *int, result Result)
+	Run(ctx context.Context, address Address) (bool, []string, error)
+	Report(result Result)
 }
 
 // Result check result
@@ -16,4 +16,10 @@ type Result struct {
 	Duration float64
 	Err      error
 	TimedOut bool
+}
+
+// Address address with host and port
+type Address struct {
+	Host string
+	Port *int
 }
