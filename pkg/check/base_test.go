@@ -35,6 +35,7 @@ func Test_buckets(t *testing.T) {
 		b := buckets()
 
 		assert.Assert(t, is.DeepEqual(b, data.expected))
+		assert.Assert(t, is.DeepEqual(b, currBuckets))
 	}
 }
 
@@ -65,5 +66,6 @@ func Test_objectives(t *testing.T) {
 		o := objectives()
 
 		assert.Assert(t, is.DeepEqual(o, data.expected))
+		assert.Assert(t, is.DeepEqual(o, currObjectives))
 	}
 }
