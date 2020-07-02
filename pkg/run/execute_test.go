@@ -13,7 +13,7 @@ const (
 )
 
 func Test_toTargets(t *testing.T) {
-	targets, err := toTargets([]string{"a", "b:1234","c,d:5678 , e:9999     "})
+	targets, err := toTargets([]string{"a", "b:1234", "c,d:5678 , e:9999     "})
 	assert.Assert(t, is.Nil(err))
 	assert.Assert(t, is.Len(targets, 5))
 }

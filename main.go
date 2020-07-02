@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"regexp"
 	"strings"
 	"time"
 
@@ -24,8 +23,6 @@ var (
 	logLevel    = log.InfoLevel
 	metricsPort = "2112"
 	interval    = 30 * time.Second
-
-	targetEnvVarPattern = regexp.MustCompile(`^\${(.*)}$`)
 )
 
 func init() {
