@@ -34,6 +34,7 @@ Exposes metrics under localhost:2112/metrics
 | dns_checker_check_dns_duration | The duration result of the DNS check in milliseconds|
 | dns_checker_check_dns_summary | The summary metric of the duration|
 | dns_checker_check_dns_histogram | The histogram metric of the duration |
+| dns_checker_probe_port | The result of the port probe check 1 OK / 0 error |
 | dns_checker_probe_port_error | Port check resulted in an error 1 = error /  0 = OK |
 | dns_checker_probe_port_duration | The duration result of the port probe check in milliseconds |
 | dns_checker_check_port_summary | The summary metric of the duration|
