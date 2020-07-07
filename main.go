@@ -51,7 +51,7 @@ func init() {
 			panic(fmt.Errorf("env var %s %q can not be parsed as duration", envInterval, i))
 		}
 	}
-	log.WithField("interval", interval).Info("Interval")
+	log.WithField("interval", fmt.Sprintf("%v", interval)).Info("Interval")
 }
 
 func main() {
