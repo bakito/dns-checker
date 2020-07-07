@@ -18,10 +18,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const (
-	dnsCallTimeout = 5 * time.Second
-)
-
 var (
 	targetEnvVarPattern = regexp.MustCompile(`^\${(.*)}$`)
 )
@@ -52,7 +48,7 @@ func Check(values []string, interval time.Duration) error {
 	for {
 		select {
 		case <-ticker.C:
-			runChecks(ctx, execChan, targetsAddresses, checks)
+			runChecks(ctx, interval, execChan, targetsAddresses, checks)
 
 		case <-sigChan:
 			cancel()
@@ -93,7 +89,7 @@ func handleResults(ctx context.Context, ex chan execution) {
 	}
 }
 
-func runChecks(ctx context.Context, resultsChan chan execution, targets []check.Address, checks []check.Check) {
+func runChecks(ctx context.Context, interval time.Duration, resultsChan chan execution, targets []check.Address, checks []check.Check) {
 	var wg sync.WaitGroup
 
 	for _, t := range targets {
@@ -103,7 +99,7 @@ func runChecks(ctx context.Context, resultsChan chan execution, targets []check.
 			go func(target check.Address) {
 				defer wg.Done()
 
-				ctx, cancel := context.WithTimeout(ctx, dnsCallTimeout)
+				ctx, cancel := context.WithTimeout(ctx, interval)
 				defer cancel()
 
 				start := time.Now()
