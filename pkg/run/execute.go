@@ -66,11 +66,13 @@ func toTargets(values []string) ([]check.Address, error) {
 			if err != nil {
 				return nil, err
 			}
+			l := log.WithField("host", target.Host)
 			if target.Port != nil {
-				log.Infof("Setup check for %s on port %d", target.Host, *target.Port)
-			} else {
-				log.Infof("Setup check for %s", target.Host)
+				l = l.WithField("port", *target.Port)
 			}
+
+			l.Info("Setup check")
+
 			targetsAddresses = append(targetsAddresses, target)
 		}
 	}
