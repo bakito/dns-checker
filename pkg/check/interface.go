@@ -13,7 +13,7 @@ type Check interface {
 // Result check result
 type Result struct {
 	Values   []string
-	Duration float64
+	Duration *float64
 	Err      error
 	TimedOut bool
 }

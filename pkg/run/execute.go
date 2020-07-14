@@ -123,8 +123,9 @@ func runChecks(ctx context.Context, resultsChan chan execution, targets []check.
 				if result != nil {
 					ex := newExecution(chk, target)
 					ex.Values = result.Values
-					if result.Duration == 0 {
-						ex.Duration = float64(elapsed.Nanoseconds()) / 1000000.
+					if result.Duration == nil {
+						dur := float64(elapsed.Nanoseconds()) / 1000000.
+						ex.Duration = &dur
 					} else {
 						ex.Duration = result.Duration
 					}

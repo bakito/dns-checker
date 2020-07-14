@@ -91,9 +91,9 @@ func (c *BaseCheck) Report(result Result) {
 		l.Debug(c.MessageOK)
 		c.StateMetric.WithLabelValues(result.Values...).Set(1)
 	}
-	c.DurationMetric.WithLabelValues(result.Values...).Set(result.Duration)
-	c.SummaryMetric.WithLabelValues(result.Values...).Observe(result.Duration)
-	c.HistogramMetric.WithLabelValues(result.Values...).Observe(result.Duration)
+	c.DurationMetric.WithLabelValues(result.Values...).Set(*result.Duration)
+	c.SummaryMetric.WithLabelValues(result.Values...).Observe(*result.Duration)
+	c.HistogramMetric.WithLabelValues(result.Values...).Observe(*result.Duration)
 }
 
 func objectives() map[float64]float64 {

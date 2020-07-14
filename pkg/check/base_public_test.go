@@ -15,7 +15,9 @@ func Test_Setup_Report(t *testing.T) {
 
 	assert.Assert(t, is.Equal(bc.MessageOK, "ok"))
 	assert.Assert(t, is.Equal(bc.MessageNOK, "nok"))
+	var duration float64 = 1
 	bc.Report(check.Result{
-		Values: []string{"a", "b"},
+		Duration: &duration,
+		Values:   []string{"a", "b"},
 	})
 }
