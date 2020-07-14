@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	digCommand = "dig %s +noall +stats 1>&2 stderr"
+	digCommand = "dig %s +noall +stats"
 )
 
 var (
@@ -36,15 +36,16 @@ type shellCheck struct {
 }
 
 func (c *shellCheck) Run(ctx context.Context, address check.Address) *check.Result {
-	cmd := exec.CommandContext(ctx, "sh", "-c", fmt.Sprintf(digCommand, address.Host))
-	stdoutStderr, err := cmd.CombinedOutput()
+	command := fmt.Sprintf(digCommand, address.Host)
+	cmd := exec.CommandContext(ctx, "sh", "-c", command)
+	out, err := cmd.Output()
 	if err == nil {
-		log.WithField("command", "dig").Debugf("%s\n", stdoutStderr)
+		log.WithField("command", "dig").Debugf("%s\n", out)
 	}
 
 	res := &check.Result{Values: []string{address.Host}, Err: err}
-	if queryTimePattern.MatchString(string(stdoutStderr)) {
-		m := queryTimePattern.FindStringSubmatch(string(stdoutStderr))
+	if queryTimePattern.MatchString(string(out)) {
+		m := queryTimePattern.FindStringSubmatch(string(out))
 		dur, _ := strconv.ParseFloat(m[1], 64)
 		res.Duration = &dur
 	} else {
