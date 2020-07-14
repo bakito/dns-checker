@@ -38,12 +38,12 @@ func (c *dnsCheck) query(target string) []byte {
 	}.encode()
 }
 
-func (c *dnsCheck) Run(ctx context.Context, address check.Address) (bool, []string, error) {
+func (c *dnsCheck) Run(ctx context.Context, address check.Address) *check.Result {
 	result, err := resolve(ctx, c.query(address.Host), c.dnsHost)
 	if err != nil {
-		return true, []string{address.Host}, err
+		return &check.Result{Values: []string{address.Host}, Err: err}
 	}
 
 	_, err = responseCode(result)
-	return true, []string{address.Host}, err
+	return &check.Result{Values: []string{address.Host}, Err: err}
 }

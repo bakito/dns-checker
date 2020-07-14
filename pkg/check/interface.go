@@ -6,7 +6,7 @@ import (
 
 // Check interface for checks
 type Check interface {
-	Run(ctx context.Context, address Address) (bool, []string, error)
+	Run(ctx context.Context, address Address) *Result
 	Report(result Result)
 }
 

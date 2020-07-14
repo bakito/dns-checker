@@ -68,6 +68,8 @@ func (c *BaseCheck) Setup(interval time.Duration, ok string, nok string, metricN
 	c.labels = labels
 	c.MessageOK = ok
 	c.MessageNOK = nok
+
+	log.WithField("name", metricName).WithField("help", metricHelp).Info("Setup check")
 }
 
 // Report report the check results
