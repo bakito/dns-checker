@@ -24,14 +24,14 @@ type probeCheck struct {
 	check.BaseCheck
 }
 
-func (c *probeCheck) Run(ctx context.Context, address check.Address) (bool, []string, error) {
+func (c *probeCheck) Run(ctx context.Context, address check.Address) *check.Result {
 	if address.Port == nil {
-		return false, nil, nil
+		return nil
 	}
 	var d net.Dialer
 	conn, err := d.DialContext(ctx, "tcp", fmt.Sprintf("%v:%v", address.Host, *address.Port))
 	if conn != nil {
 		_ = conn.Close()
 	}
-	return true, []string{address.Host, fmt.Sprintf("%d", *address.Port)}, err
+	return &check.Result{Values: []string{address.Host, fmt.Sprintf("%d", *address.Port)}, Err: err}
 }

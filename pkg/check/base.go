@@ -74,6 +74,8 @@ func (c *BaseCheck) Setup(interval time.Duration, ok string, nok string, metricN
 	c.labels = labels
 	c.MessageOK = ok
 	c.MessageNOK = nok
+
+	log.WithField("name", metricName).Info("Setup check")
 }
 
 // Report report the check results
@@ -97,9 +99,9 @@ func (c *BaseCheck) Report(result Result) {
 		c.SuccessMetric.WithLabelValues(result.Values...).Set(1)
 		c.ErrorMetric.WithLabelValues(result.Values...).Set(0)
 	}
-	c.DurationMetric.WithLabelValues(result.Values...).Set(result.Duration)
-	c.SummaryMetric.WithLabelValues(result.Values...).Observe(result.Duration)
-	c.HistogramMetric.WithLabelValues(result.Values...).Observe(result.Duration)
+	c.DurationMetric.WithLabelValues(result.Values...).Set(*result.Duration)
+	c.SummaryMetric.WithLabelValues(result.Values...).Observe(*result.Duration)
+	c.HistogramMetric.WithLabelValues(result.Values...).Observe(*result.Duration)
 }
 
 func objectives() map[float64]float64 {

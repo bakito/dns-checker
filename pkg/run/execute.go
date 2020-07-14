@@ -15,7 +15,13 @@ import (
 	"github.com/bakito/dns-checker/pkg/check/dns"
 	"github.com/bakito/dns-checker/pkg/check/manualdns"
 	"github.com/bakito/dns-checker/pkg/check/port"
+	"github.com/bakito/dns-checker/pkg/check/shell"
 	log "github.com/sirupsen/logrus"
+)
+
+const (
+	envManualDnsHost = "MANUAL_DNS_HOST"
+	envRunDig        = "RUN_DIG"
 )
 
 var (
@@ -31,8 +37,14 @@ func Check(values []string, interval time.Duration) error {
 
 	checks := []check.Check{dns.New(interval), port.New(interval)}
 
-	if dnsHost, exists := os.LookupEnv("MANUAL_DNS_HOST"); exists {
+	if dnsHost, exists := os.LookupEnv(envManualDnsHost); exists {
 		checks = append(checks, manualdns.New(dnsHost, interval))
+	}
+
+	if val, exists := os.LookupEnv(envRunDig); exists {
+		if run, _ := strconv.ParseBool(val); run {
+			checks = append(checks, shell.NewDig(interval))
+		}
 	}
 
 	sigChan := make(chan os.Signal, 1)
@@ -106,15 +118,20 @@ func runChecks(ctx context.Context, interval time.Duration, resultsChan chan exe
 
 				start := time.Now()
 
-				executed, values, err := chk.Run(ctx, target)
+				result := chk.Run(ctx, target)
 				elapsed := time.Since(start)
 
-				if executed {
+				if result != nil {
 					ex := newExecution(chk, target)
-					ex.Values = values
-					ex.Duration = float64(elapsed.Nanoseconds()) / 1000000.
-					ex.Err = err
-					ex.TimedOut = err == context.Canceled
+					ex.Values = result.Values
+					if result.Duration == nil {
+						dur := float64(elapsed.Nanoseconds()) / 1000000.
+						ex.Duration = &dur
+					} else {
+						ex.Duration = result.Duration
+					}
+					ex.Err = result.Err
+					ex.TimedOut = result.Err == context.Canceled
 					resultsChan <- ex
 				}
 			}(t)

@@ -15,10 +15,12 @@ RUN go build -a -installsuffix cgo -ldflags="-w -s" -o dns-checker && \
     upx --ultra-brute -q dns-checker
 
 # application image
-
-FROM scratch
+FROM registry.access.redhat.com/ubi8/ubi-minimal:latest
 
 LABEL maintainer="bakito <github@bakito.ch>"
+
+RUN microdnf install bind-utils && \
+    microdnf clean all
 EXPOSE 2112
 USER 1001
 ENTRYPOINT ["/go/bin/dns-checker"]

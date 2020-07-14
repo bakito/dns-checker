@@ -23,7 +23,7 @@ type dnsCheck struct {
 	check.BaseCheck
 }
 
-func (c *dnsCheck) Run(ctx context.Context, address check.Address) (bool, []string, error) {
+func (c *dnsCheck) Run(ctx context.Context, address check.Address) *check.Result {
 	_, err := net.DefaultResolver.LookupHost(ctx, address.Host)
-	return true, []string{address.Host}, err
+	return &check.Result{Values: []string{address.Host}, Err: err}
 }
