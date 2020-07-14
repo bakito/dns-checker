@@ -11,7 +11,7 @@ import (
 
 func Test_Setup_Report(t *testing.T) {
 	bc := check.BaseCheck{}
-	bc.Setup(5*time.Second, "ok", "nok", "metricName", "metricHelp", "labels1", "label2")
+	bc.Setup(5*time.Second, "ok", "nok", "metricName", "labels1", "label2")
 
 	assert.Assert(t, is.Equal(bc.MessageOK, "ok"))
 	assert.Assert(t, is.Equal(bc.MessageNOK, "nok"))

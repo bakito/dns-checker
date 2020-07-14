@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -16,6 +17,7 @@ const (
 	envTarget      = "TARGET"
 	envMetricsPort = "METRICS_PORT"
 	envLogLevel    = "LOG_LEVEL"
+	envLogJSON     = "LOG_JSON"
 	envInterval    = "INTERVAL"
 )
 
@@ -34,6 +36,11 @@ func init() {
 		}
 	}
 	log.SetLevel(logLevel)
+	if json, exists := os.LookupEnv(envLogJSON); exists {
+		if enabled, err := strconv.ParseBool(json); enabled && err == nil {
+			log.SetFormatter(&log.JSONFormatter{})
+		}
+	}
 
 	if p, exists := os.LookupEnv(envMetricsPort); exists {
 		metricsPort = p
@@ -44,7 +51,7 @@ func init() {
 			panic(fmt.Errorf("env var %s %q can not be parsed as duration", envInterval, i))
 		}
 	}
-	log.Infof("Interval is %v", interval)
+	log.WithField("interval", fmt.Sprintf("%v", interval)).Info("Interval")
 }
 
 func main() {
@@ -61,7 +68,7 @@ func main() {
 }
 
 func serveMetrics() {
-	log.Infof("Starting metrics on port %s", metricsPort)
+	log.WithField("port", metricsPort).Info("Starting metrics")
 	http.Handle("/metrics", promhttp.Handler())
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", metricsPort), nil))
 }

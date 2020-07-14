@@ -27,7 +27,6 @@ func NewDig(interval time.Duration) check.Check {
 		"Dig succeeded",
 		"Error executing dig",
 		"dns_checker_check_dig",
-		"Result of dig command check 0 = error, 1 = OK",
 		"target")
 	return c
 }

@@ -15,7 +15,6 @@ func New(interval time.Duration) check.Check {
 		"Host resolved",
 		"Error resolving host",
 		"dns_checker_check_dns",
-		"Result of DNS check 0 = error, 1 = OK",
 		"target")
 	return c
 }

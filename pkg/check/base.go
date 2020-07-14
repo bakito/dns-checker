@@ -36,7 +36,8 @@ var (
 type BaseCheck struct {
 	MessageOK       string
 	MessageNOK      string
-	StateMetric     *prometheus.GaugeVec
+	SuccessMetric   *prometheus.GaugeVec
+	ErrorMetric     *prometheus.GaugeVec
 	DurationMetric  *prometheus.GaugeVec
 	SummaryMetric   *prometheus.SummaryVec
 	HistogramMetric *prometheus.HistogramVec
@@ -45,10 +46,15 @@ type BaseCheck struct {
 }
 
 // Setup setup the check
-func (c *BaseCheck) Setup(interval time.Duration, ok string, nok string, metricName string, metricHelp string, labels ...string) {
-	c.StateMetric = promauto.NewGaugeVec(prometheus.GaugeOpts{
+func (c *BaseCheck) Setup(interval time.Duration, ok string, nok string, metricName string, labels ...string) {
+
+	c.SuccessMetric = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Name: metricName,
-		Help: metricHelp,
+		Help: "Result of the check 0 = error, 1 = OK",
+	}, labels)
+	c.ErrorMetric = promauto.NewGaugeVec(prometheus.GaugeOpts{
+		Name: fmt.Sprintf("%s_error", metricName),
+		Help: "Check resulted in an error; 1 = error, 0 = OK",
 	}, labels)
 	c.DurationMetric = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Name: fmt.Sprintf("%s_duration", metricName),
@@ -69,7 +75,7 @@ func (c *BaseCheck) Setup(interval time.Duration, ok string, nok string, metricN
 	c.MessageOK = ok
 	c.MessageNOK = nok
 
-	log.WithField("name", metricName).WithField("help", metricHelp).Info("Setup check")
+	log.WithField("name", metricName).Info("Setup check")
 }
 
 // Report report the check results
@@ -86,10 +92,12 @@ func (c *BaseCheck) Report(result Result) {
 	l := log.WithFields(fields)
 	if result.Err != nil {
 		l.Warnf("%s : %v", c.MessageNOK, result.Err)
-		c.StateMetric.WithLabelValues(result.Values...).Set(0)
+		c.SuccessMetric.WithLabelValues(result.Values...).Set(0)
+		c.ErrorMetric.WithLabelValues(result.Values...).Set(1)
 	} else {
 		l.Debug(c.MessageOK)
-		c.StateMetric.WithLabelValues(result.Values...).Set(1)
+		c.SuccessMetric.WithLabelValues(result.Values...).Set(1)
+		c.ErrorMetric.WithLabelValues(result.Values...).Set(0)
 	}
 	c.DurationMetric.WithLabelValues(result.Values...).Set(*result.Duration)
 	c.SummaryMetric.WithLabelValues(result.Values...).Observe(*result.Duration)

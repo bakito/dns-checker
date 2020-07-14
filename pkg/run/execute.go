@@ -20,7 +20,6 @@ import (
 )
 
 const (
-	dnsCallTimeout   = 5 * time.Second
 	envManualDnsHost = "MANUAL_DNS_HOST"
 	envRunDig        = "RUN_DIG"
 )
@@ -61,7 +60,7 @@ func Check(values []string, interval time.Duration) error {
 	for {
 		select {
 		case <-ticker.C:
-			runChecks(ctx, execChan, targetsAddresses, checks)
+			runChecks(ctx, interval, execChan, targetsAddresses, checks)
 
 		case <-sigChan:
 			cancel()
@@ -79,11 +78,13 @@ func toTargets(values []string) ([]check.Address, error) {
 			if err != nil {
 				return nil, err
 			}
+			l := log.WithField("host", target.Host)
 			if target.Port != nil {
-				log.Infof("Setup check for %s on port %d", target.Host, *target.Port)
-			} else {
-				log.Infof("Setup check for %s", target.Host)
+				l = l.WithField("port", *target.Port)
 			}
+
+			l.Info("Setup check")
+
 			targetsAddresses = append(targetsAddresses, target)
 		}
 	}
@@ -102,7 +103,7 @@ func handleResults(ctx context.Context, ex chan execution) {
 	}
 }
 
-func runChecks(ctx context.Context, resultsChan chan execution, targets []check.Address, checks []check.Check) {
+func runChecks(ctx context.Context, interval time.Duration, resultsChan chan execution, targets []check.Address, checks []check.Check) {
 	var wg sync.WaitGroup
 
 	for _, t := range targets {
@@ -112,7 +113,7 @@ func runChecks(ctx context.Context, resultsChan chan execution, targets []check.
 			go func(target check.Address) {
 				defer wg.Done()
 
-				ctx, cancel := context.WithTimeout(ctx, dnsCallTimeout)
+				ctx, cancel := context.WithTimeout(ctx, interval)
 				defer cancel()
 
 				start := time.Now()

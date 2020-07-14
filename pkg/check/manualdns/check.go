@@ -15,7 +15,6 @@ func New(dnsHost string, interval time.Duration) check.Check {
 		fmt.Sprintf("Host resolved with dns server %s", dnsHost),
 		fmt.Sprintf("Error resolving host with dns server %s", dnsHost),
 		"dns_checker_check_manual_dns",
-		"Result of DNS check 0 = error, 1 = OK",
 		"target")
 	c.dnsHost = dnsHost
 	return c

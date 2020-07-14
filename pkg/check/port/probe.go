@@ -16,7 +16,6 @@ func New(interval time.Duration) check.Check {
 		"Probe was successful",
 		"Error probing",
 		"dns_checker_probe_port",
-		"Result of port probe 0 = error, 1 = OK",
 		"target", "port")
 	return c
 }
