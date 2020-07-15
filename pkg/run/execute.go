@@ -129,8 +129,8 @@ func runChecks(ctx context.Context, interval time.Duration, resultsChan chan exe
 							l := log.WithFields(log.Fields{
 								"name":               chk.Name(),
 								"host":               target.Host,
-								"check-duration":     result.Duration,
-								"execution-duration": duration})
+								"check-duration":     float64(*result.Duration) / float64(time.Millisecond),
+								"execution-duration": float64(duration) / float64(time.Millisecond)})
 							if target.Port != nil {
 								l = l.WithField("port", *target.Port)
 							}
