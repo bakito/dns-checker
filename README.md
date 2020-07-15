@@ -15,7 +15,9 @@ docker run -p 2112:2112 -e TARGET=<target-host> quay.io/bakito/dns-checker
 | Name | Description | Required | Default 
 | :---: | --- | :---: | :---: |
 | TARGET | The DNS target hosts to check. ',' separated host(:port) list. Env variables can be used here with notation '${ENV_VAR_NAME}' | X |  |
-| INTERVAL | The check intercal in seconds | O | 30 |
+| INTERVAL | The check interval as duration | O | 30s |
+| TIMEOUT | The check timeout as duration | O | 10s |
+| WORKER | The number of workers to be used for the checks | O | 10 |
 | METRICS_PORT | The port for the metrics service | O | 2112 |
 | LOG_LEVEL | The log level (panic, fatal, error, warn, info, debug, trace)| O | info |
 | LOG_JSON | Enables json log format if set to tue | O | false |
@@ -29,14 +31,18 @@ Exposes metrics under localhost:2112/metrics
 
 | Key | Description  
 | :---: | --- |
-| dns_checker_check_dns | The result of the DNS check 1 OK / 0 error |
-| dns_checker_check_dns_error | DNS check resulted in an error 1 = error /  0 = OK |
-| dns_checker_check_dns_duration | The duration result of the DNS check in milliseconds|
-| dns_checker_check_dns_summary | The summary metric of the duration|
-| dns_checker_check_dns_histogram | The histogram metric of the duration |
-| dns_checker_probe_port | The result of the port probe check 1 OK / 0 error |
-| dns_checker_probe_port_error | Port check resulted in an error 1 = error /  0 = OK |
-| dns_checker_probe_port_duration | The duration result of the port probe check in milliseconds |
-| dns_checker_check_port_summary | The summary metric of the duration|
-| dns_checker_check_port_histogram | The histogram metric of the duration |
+| dns_checker_check | The result of the checks 1 OK / 0 error |
+| dns_checker_check_error | check resulted in an error 1 = error /  0 = OK |
+| dns_checker_check_duration | The duration result of the check in milliseconds|
+| dns_checker_check_summary | The summary metric of the duration|
+| dns_checker_check_histogram | The histogram metric of the duration |
 
+### Metrics Labels
+
+Each metric has the following labels
+| Name | Description  
+| :---: | --- |
+| target | The target of the checks |
+| port | The port of the checks (may be empty) |
+| check_name | The name of the check |
+| version | The application version  |

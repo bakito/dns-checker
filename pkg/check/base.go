@@ -47,7 +47,7 @@ var (
 )
 
 func Init(timeout time.Duration) {
-	labels := []string{"target", "port", "check_type", "version"}
+	labels := []string{"target", "port", "check_name", "version"}
 	successMetric = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Name: metricName,
 		Help: "Result of the check 0 = error, 1 = OK",
