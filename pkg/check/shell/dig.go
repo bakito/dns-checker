@@ -45,7 +45,7 @@ func (c *digCheck) Run(ctx context.Context, address check.Address) *check.Result
 		return res
 	}
 
-	// Mis
+	// fail if 'NOERROR' is not found
 	if !noErrorPattern.Match(out) {
 		res.Err = errors.New(string(out))
 		return res
