@@ -24,7 +24,7 @@ func startDispatcher(workerCount int) Collector {
 
 	for i < workerCount {
 		i++
-		log.WithField("id", i).Info("starting worker")
+		log.WithField("worker", i).Info("starting worker")
 		worker := worker{
 			id:            i,
 			channel:       make(chan work),
@@ -85,6 +85,6 @@ func (w *worker) Start() {
 
 // end worker
 func (w *worker) Stop() {
-	log.Printf("worker [%d] is stopping", w.id)
+	log.WithField("worker", w.id).Info("worker is stopping")
 	w.end <- true
 }

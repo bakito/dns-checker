@@ -90,6 +90,7 @@ func (c *BaseCheck) Report(result Result) {
 	fields := log.Fields{}
 	fields["name"] = c.name
 	fields["duration"] = duration
+	fields["worker"] = result.WorkerId
 
 	for i, v := range result.Values {
 		fields[c.labels[i]] = v

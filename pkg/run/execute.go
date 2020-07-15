@@ -114,6 +114,7 @@ func runCheck(w work, workerID int) {
 
 	start := time.Now()
 	result := w.chk.Run(ctx, w.target)
+	result.WorkerId = workerID
 	duration := time.Since(start)
 
 	if log.GetLevel() > log.InfoLevel || boolEnv(envLogDuration) {
@@ -137,6 +138,7 @@ func logDuration(chk check.Check, target check.Address, result *check.Result, du
 	l := log.WithFields(log.Fields{
 		"name":     chk.Name(),
 		"host":     target.Host,
+		"worker":   result.WorkerId,
 		"duration": float64(duration) / float64(time.Millisecond)})
 	if result.Duration != nil {
 		l = log.WithField("check-duration", float64(*result.Duration)/float64(time.Millisecond))
