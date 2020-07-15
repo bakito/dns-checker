@@ -17,7 +17,6 @@ const (
 
 var (
 	receivedPattern = regexp.MustCompile(`.*bytes received in (\d+[.]\d*) seconds.*`)
-	refusedPattern  = regexp.MustCompile(`.*Ncat: Connection refused.*`)
 )
 
 // New create a new nc command check
