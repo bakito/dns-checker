@@ -4,18 +4,21 @@ import (
 	"context"
 	"fmt"
 	"net"
-	"time"
 
 	"github.com/bakito/dns-checker/pkg/check"
 )
 
+const (
+	Name = "probe-port"
+)
+
 // New create a new port probe check
-func New(interval time.Duration) check.Check {
+func New() check.Check {
 	c := &probeCheck{}
-	c.Setup(interval,
+	c.Setup(
 		"Probe was successful",
 		"Error probing",
-		"dns_checker_probe_port")
+		Name)
 	return c
 }
 

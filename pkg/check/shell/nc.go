@@ -13,6 +13,7 @@ import (
 
 const (
 	ncCommand = "nc -zv  %s %d"
+	NameNC    = "nc"
 )
 
 var (
@@ -20,12 +21,12 @@ var (
 )
 
 // New create a new nc command check
-func NewNc(interval time.Duration) check.Check {
+func NewNc() check.Check {
 	c := &ncCheck{}
-	c.Setup(interval,
+	c.Setup(
 		"Netcat succeeded",
 		"Error executing nc",
-		"nc")
+		NameNC)
 	return c
 }
 

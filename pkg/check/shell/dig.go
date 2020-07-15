@@ -14,6 +14,7 @@ import (
 
 const (
 	digCommand = "dig %s"
+	NameDig    = "dig"
 )
 
 var (
@@ -22,12 +23,12 @@ var (
 )
 
 // New create a new dig command check
-func NewDig(interval time.Duration) check.Check {
+func NewDig() check.Check {
 	c := &digCheck{}
-	c.Setup(interval,
+	c.Setup(
 		"Dig succeeded",
 		"Error executing dig",
-		"dig")
+		NameDig)
 	return c
 }
 

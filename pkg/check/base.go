@@ -23,7 +23,7 @@ const (
 	//  E.g: "0.002,0.005,0.01,0.025,0.05,0.1,0.25,0.5,1,2.5,5,10,20"
 	envMetricHistogramBuckets = "METRICS_HISTOGRAM_BUCKETS"
 
-	separator = ","
+	Separator = ","
 
 	metricName          = "dns_checker_check"
 	metricErrorName     = metricName + "_error"
@@ -85,7 +85,7 @@ func (c *BaseCheck) Name() string {
 }
 
 // Setup setup the check
-func (c *BaseCheck) Setup(interval time.Duration, ok string, nok string, name string) {
+func (c *BaseCheck) Setup(ok string, nok string, name string) {
 	c.name = name
 	c.MessageOK = ok
 	c.MessageNOK = nok
@@ -135,7 +135,7 @@ func objectives() map[float64]float64 {
 
 	if value, exists := os.LookupEnv(envMetricSummaryObjectives); exists {
 		custom := make(map[float64]float64)
-		objectives := strings.Split(value, separator)
+		objectives := strings.Split(value, Separator)
 		for _, o := range objectives {
 			objective := strings.Split(o, ":")
 			if len(objective) == 2 {
@@ -171,7 +171,7 @@ func buckets(timeout time.Duration) []float64 {
 
 	if value, exists := os.LookupEnv(envMetricHistogramBuckets); exists {
 		var custom []float64
-		objectives := strings.Split(value, separator)
+		objectives := strings.Split(value, Separator)
 		for _, o := range objectives {
 			a, err := strconv.ParseFloat(strings.TrimSpace(o), 64)
 			if err != nil {
