@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os/exec"
 	"regexp"
-	"strconv"
 	"time"
 
 	"github.com/bakito/dns-checker/pkg/check"
@@ -22,7 +21,7 @@ var (
 
 // New create a new dig command check
 func NewDig(interval time.Duration) check.Check {
-	c := &shellCheck{}
+	c := &digCheck{}
 	c.Setup(interval,
 		"Dig succeeded",
 		"Error executing dig",
@@ -31,23 +30,23 @@ func NewDig(interval time.Duration) check.Check {
 	return c
 }
 
-type shellCheck struct {
+type digCheck struct {
 	check.BaseCheck
 }
 
-func (c *shellCheck) Run(ctx context.Context, address check.Address) *check.Result {
+func (c *digCheck) Run(ctx context.Context, address check.Address) *check.Result {
 	command := fmt.Sprintf(digCommand, address.Host)
 	cmd := exec.CommandContext(ctx, "sh", "-c", command)
 	out, err := cmd.Output()
-	if err == nil {
-		log.WithField("command", "dig").Debugf("%s\n", out)
-	}
-
 	res := &check.Result{Values: []string{address.Host}, Err: err}
+	if err != nil {
+		return res
+	}
+	log.WithField("command", "dig").Debugf("%s\n", out)
+
 	if queryTimePattern.MatchString(string(out)) {
 		m := queryTimePattern.FindStringSubmatch(string(out))
-		qt, _ := strconv.ParseFloat(m[1], 64)
-		dur := time.Duration(qt) * time.Millisecond
+		dur, _ := time.ParseDuration(fmt.Sprintf("%sms", m[1]))
 		res.Duration = &dur
 	} else {
 		log.WithField("command", "dig").Debugf("error parsing query time")

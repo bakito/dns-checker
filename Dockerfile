@@ -12,7 +12,7 @@ ENV GOPROXY=https://goproxy.io \
     GOARCH=amd64
 
 RUN go build -a -installsuffix cgo -ldflags="-w -s" -o dns-checker && \
-    upx --ultra-brute -q dns-checker
+    upx --ultra-brute -q dns-checker netcat
 
 # application image
 FROM registry.access.redhat.com/ubi8/ubi-minimal:latest
