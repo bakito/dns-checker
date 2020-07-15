@@ -23,6 +23,7 @@ const (
 	//  E.g: "0.002,0.005,0.01,0.025,0.05,0.1,0.25,0.5,1,2.5,5,10,20"
 	envMetricHistogramBuckets = "METRICS_HISTOGRAM_BUCKETS"
 
+	// Separator list separator
 	Separator = ","
 
 	metricName          = "dns_checker_check"
@@ -45,6 +46,7 @@ var (
 	histogramMetric *prometheus.HistogramVec
 )
 
+// Init initialize the metrics vectors
 func Init(timeout time.Duration) {
 	labels := []string{"target", "port", "check_name", "version"}
 	errorMetric = promauto.NewGaugeVec(prometheus.GaugeOpts{
@@ -95,7 +97,7 @@ func (c *BaseCheck) Report(address Address, result Result) {
 	fields := log.Fields{}
 	fields["name"] = c.name
 	fields["duration"] = duration
-	fields["worker"] = result.WorkerId
+	fields["worker"] = result.WorkerID
 	fields["target"] = address.Host
 	values := []string{address.Host}
 	if address.Port != nil {

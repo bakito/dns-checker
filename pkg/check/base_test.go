@@ -39,9 +39,9 @@ func Test_buckets(t *testing.T) {
 
 	for _, data := range bucketTestData {
 		if data.env == "" {
-			os.Unsetenv(envMetricHistogramBuckets)
+			_ = os.Unsetenv(envMetricHistogramBuckets)
 		} else {
-			os.Setenv(envMetricHistogramBuckets, data.env)
+			_ = os.Setenv(envMetricHistogramBuckets, data.env)
 		}
 
 		currBuckets = nil
@@ -70,9 +70,9 @@ func Test_objectives(t *testing.T) {
 
 	for _, data := range bucketTestData {
 		if data.env == "" {
-			os.Unsetenv(envMetricSummaryObjectives)
+			_ = os.Unsetenv(envMetricSummaryObjectives)
 		} else {
-			os.Setenv(envMetricSummaryObjectives, data.env)
+			_ = os.Setenv(envMetricSummaryObjectives, data.env)
 		}
 
 		currObjectives = nil

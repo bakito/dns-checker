@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	envManualDnsHost = "MANUAL_DNS_HOST"
+	envManualDNSHost = "MANUAL_DNS_HOST"
 	envEnabledChecks = "ENABLED_CHECKS"
 	envLogDuration   = "LOG_DURATION"
 )
@@ -110,7 +110,7 @@ func runCheck(w work, workerID int) {
 
 	start := time.Now()
 	result := w.chk.Run(ctx, w.target)
-	result.WorkerId = workerID
+	result.WorkerID = workerID
 	duration := time.Since(start)
 
 	if log.GetLevel() > log.InfoLevel || boolEnv(envLogDuration) {
@@ -133,7 +133,7 @@ func logDuration(chk check.Check, target check.Address, result *check.Result, du
 	l := log.WithFields(log.Fields{
 		"name":     chk.Name(),
 		"host":     target.Host,
-		"worker":   result.WorkerId,
+		"worker":   result.WorkerID,
 		"duration": float64(duration) / float64(time.Millisecond)})
 	if result.Duration != nil {
 		l = l.WithField("check-duration", float64(*result.Duration)/float64(time.Millisecond))
@@ -154,11 +154,11 @@ func toTarget(in string) (check.Address, error) {
 		return addr, nil
 	}
 
-	port := fromEnv(strings.TrimSpace(hp[1]))
+	portStr := fromEnv(strings.TrimSpace(hp[1]))
 
-	p, err := strconv.Atoi(port)
+	p, err := strconv.Atoi(portStr)
 	if err != nil {
-		return addr, fmt.Errorf("port %q of host %q can not be parsed as int", port, host)
+		return addr, fmt.Errorf("port %q of host %q can not be parsed as int", portStr, host)
 	}
 	addr.Port = &p
 	return addr, nil
@@ -195,10 +195,10 @@ func checks() ([]check.Check, error) {
 			case port.Name:
 				enabled = append(enabled, port.New())
 			case manualdns.Name:
-				if dnsHost, exists := os.LookupEnv(envManualDnsHost); exists {
+				if dnsHost, exists := os.LookupEnv(envManualDNSHost); exists {
 					enabled = append(enabled, manualdns.New(dnsHost))
 				} else {
-					return nil, fmt.Errorf("%q must be defined to use %s check", envManualDnsHost, manualdns.Name)
+					return nil, fmt.Errorf("%q must be defined to use %s check", envManualDNSHost, manualdns.Name)
 				}
 			case shell.NameDig:
 				enabled = append(enabled, shell.NewDig())
@@ -207,7 +207,6 @@ func checks() ([]check.Check, error) {
 			}
 		}
 		return enabled, nil
-	} else {
-		return []check.Check{dns.New(), port.New()}, nil
 	}
+	return []check.Check{dns.New(), port.New()}, nil
 }

@@ -17,7 +17,7 @@ type Result struct {
 	Duration *time.Duration
 	Err      error
 	TimedOut bool
-	WorkerId int
+	WorkerID int
 }
 
 // Address address with host and port

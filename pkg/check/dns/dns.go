@@ -8,6 +8,7 @@ import (
 )
 
 const (
+	// Name the name of this check
 	Name = "dns"
 )
 

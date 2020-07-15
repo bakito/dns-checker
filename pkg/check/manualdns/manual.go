@@ -131,7 +131,9 @@ func resolve(ctx context.Context, query []byte, dnsServer string) (byte, error) 
 	if err != nil {
 		return 0, fmt.Errorf("failed to connect: %v", err)
 	}
-	defer conn.Close()
+	defer func() {
+		_ = conn.Close()
+	}()
 
 	_, _ = conn.Write(query)
 

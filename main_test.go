@@ -15,13 +15,13 @@ func Test_findTargets(t *testing.T) {
 	for _, e := range os.Environ() {
 		variable := strings.Split(e, "=")
 		if strings.HasSuffix(variable[0], envTarget) {
-			os.Unsetenv(variable[0])
+			_ = os.Unsetenv(variable[0])
 		}
 	}
 
 	// setup
-	os.Setenv(envTarget+"_Test1", "a")
-	os.Setenv(envTarget+"_Test2", "b")
+	_ = os.Setenv(envTarget+"_Test1", "a")
+	_ = os.Setenv(envTarget+"_Test2", "b")
 
 	targets := findTargets()
 	Assert(t, is.Len(targets, 2))

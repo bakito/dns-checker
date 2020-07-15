@@ -13,14 +13,15 @@ import (
 
 const (
 	ncCommand = "nc -zv  %s %d"
-	NameNC    = "nc"
+	// NameNC the name of the nc check
+	NameNC = "nc"
 )
 
 var (
 	receivedPattern = regexp.MustCompile(`.*bytes received in (\d+[.]\d*) seconds.*`)
 )
 
-// New create a new nc command check
+// NewNc create a new nc command check
 func NewNc() check.Check {
 	c := &ncCheck{}
 	c.Setup(

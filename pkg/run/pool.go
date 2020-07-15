@@ -8,19 +8,19 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var WorkerChannel = make(chan chan work)
+var workerChannel = make(chan chan work)
 
-type Collector struct {
+type collector struct {
 	work chan work // receives jobs to send to workers
 	end  chan bool // when receives bool stops workers
 }
 
-func startDispatcher(workerCount int) Collector {
+func startDispatcher(workerCount int) collector {
 	var i int
 	var workers []worker
-	input := make(chan work) // channel to recieve work
+	input := make(chan work) // channel to receive work
 	end := make(chan bool)   // channel to spin down workers
-	collector := Collector{work: input, end: end}
+	collector := collector{work: input, end: end}
 
 	for i < workerCount {
 		i++
@@ -28,7 +28,7 @@ func startDispatcher(workerCount int) Collector {
 		worker := worker{
 			id:            i,
 			channel:       make(chan work),
-			workerChannel: WorkerChannel,
+			workerChannel: workerChannel,
 			end:           make(chan bool)}
 		worker.Start()
 		workers = append(workers, worker) // stores worker
@@ -44,7 +44,7 @@ func startDispatcher(workerCount int) Collector {
 				}
 				return
 			case work := <-input:
-				worker := <-WorkerChannel // wait for available channel
+				worker := <-workerChannel // wait for available channel
 				worker <- work            // dispatch work to worker
 			}
 		}

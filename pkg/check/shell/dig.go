@@ -14,7 +14,8 @@ import (
 
 const (
 	digCommand = "dig %s"
-	NameDig    = "dig"
+	// NameDig the name of the dig check
+	NameDig = "dig"
 )
 
 var (
@@ -22,7 +23,7 @@ var (
 	noErrorPattern   = regexp.MustCompile(`.*status: NOERROR.*`)
 )
 
-// New create a new dig command check
+// NewDig create a new dig command check
 func NewDig() check.Check {
 	c := &digCheck{}
 	c.Setup(
