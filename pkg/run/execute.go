@@ -8,7 +8,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/bakito/dns-checker/pkg/check"
@@ -30,7 +29,7 @@ var (
 )
 
 // Check run the checks
-func Check(values []string, interval time.Duration) error {
+func Check(values []string, interval time.Duration, worker int) error {
 	targetsAddresses, err := toTargets(values)
 	if err != nil {
 		return err
@@ -56,11 +55,17 @@ func Check(values []string, interval time.Duration) error {
 
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
+	collector := startDispatcher(worker) // start up worker pool
 
 	for {
 		select {
 		case <-ticker.C:
-			runChecks(ctx, interval, execChan, targetsAddresses, checks)
+
+			for _, t := range targetsAddresses {
+				for chk := range checks {
+					collector.work <- work{ctx, interval, execChan, t, checks[chk]}
+				}
+			}
 
 		case <-sigChan:
 			cancel()
@@ -103,48 +108,37 @@ func handleResults(ctx context.Context, ex chan execution) {
 	}
 }
 
-func runChecks(ctx context.Context, interval time.Duration, resultsChan chan execution, targets []check.Address, checks []check.Check) {
-	var wg sync.WaitGroup
+func runCheck(w work, workerID int) {
+	ctx, cancel := context.WithTimeout(w.ctx, w.interval)
+	defer cancel()
 
-	for _, t := range targets {
-		for i := range checks {
-			chk := checks[i]
-			wg.Add(1)
-			go func(target check.Address) {
-				defer wg.Done()
+	start := time.Now()
+	result := w.chk.Run(ctx, w.target)
+	result.WorkerId = workerID
+	duration := time.Since(start)
 
-				ctx, cancel := context.WithTimeout(ctx, interval)
-				defer cancel()
-
-				start := time.Now()
-				result := chk.Run(ctx, target)
-				duration := time.Since(start)
-
-				if log.GetLevel() > log.InfoLevel || boolEnv(envLogDuration) {
-					logDuration(chk, target, result, duration)
-				}
-				if result != nil {
-					ex := newExecution(chk, target)
-					ex.Values = result.Values
-					if result.Duration == nil {
-						ex.Duration = &duration
-					} else {
-						ex.Duration = result.Duration
-					}
-					ex.Err = result.Err
-					ex.TimedOut = result.Err == context.Canceled
-					resultsChan <- ex
-				}
-			}(t)
-		}
+	if log.GetLevel() > log.InfoLevel || boolEnv(envLogDuration) {
+		logDuration(w.chk, w.target, result, duration)
 	}
-	wg.Wait()
+	if result != nil {
+		ex := newExecution(w.chk, w.target)
+		ex.Values = result.Values
+		if result.Duration == nil {
+			ex.Duration = &duration
+		} else {
+			ex.Duration = result.Duration
+		}
+		ex.Err = result.Err
+		ex.TimedOut = result.Err == context.Canceled
+		w.resultsChan <- ex
+	}
 }
 
 func logDuration(chk check.Check, target check.Address, result *check.Result, duration time.Duration) {
 	l := log.WithFields(log.Fields{
 		"name":     chk.Name(),
 		"host":     target.Host,
+		"worker":   result.WorkerId,
 		"duration": float64(duration) / float64(time.Millisecond)})
 	if result.Duration != nil {
 		l = log.WithField("check-duration", float64(*result.Duration)/float64(time.Millisecond))

@@ -89,7 +89,8 @@ func (c *BaseCheck) Report(result Result) {
 	duration := float64(*result.Duration) / float64(time.Millisecond)
 	fields := log.Fields{}
 	fields["name"] = c.name
-	fields["duration"] = fmt.Sprintf("%vms", duration)
+	fields["duration"] = duration
+	fields["worker"] = result.WorkerId
 
 	for i, v := range result.Values {
 		fields[c.labels[i]] = v

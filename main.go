@@ -19,12 +19,14 @@ const (
 	envLogLevel    = "LOG_LEVEL"
 	envLogJSON     = "LOG_JSON"
 	envInterval    = "INTERVAL"
+	envWorker      = "WORKER"
 )
 
 var (
 	logLevel    = log.InfoLevel
 	metricsPort = "2112"
 	interval    = 30 * time.Second
+	worker      = 10
 )
 
 func init() {
@@ -51,7 +53,14 @@ func init() {
 			panic(fmt.Errorf("env var %s %q can not be parsed as duration", envInterval, i))
 		}
 	}
-	log.WithField("interval", fmt.Sprintf("%v", interval)).Info("Interval")
+
+	if w, exists := os.LookupEnv(envWorker); exists {
+		worker, err = strconv.Atoi(w)
+		if err != nil {
+			panic(fmt.Errorf("env var %s %q can not be parsed as int", envWorker, w))
+		}
+	}
+	log.WithFields(log.Fields{"interval": fmt.Sprintf("%v", interval), "workers": worker}).Info("Interval")
 }
 
 func main() {
@@ -61,7 +70,7 @@ func main() {
 	if len(values) == 0 {
 		panic(fmt.Errorf("env var %s is needed", envTarget))
 	}
-	err := run.Check(values, interval)
+	err := run.Check(values, interval, worker)
 	if err != nil {
 		panic(err)
 	}
