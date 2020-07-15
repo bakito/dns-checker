@@ -12,14 +12,14 @@ ENV GOPROXY=https://goproxy.io \
     GOARCH=amd64
 
 RUN go build -a -installsuffix cgo -ldflags="-w -s" -o dns-checker && \
-    upx --ultra-brute -q dns-checker netcat
+    upx --ultra-brute -q dns-checker
 
 # application image
 FROM registry.access.redhat.com/ubi8/ubi-minimal:latest
 
 LABEL maintainer="bakito <github@bakito.ch>"
 
-RUN microdnf install bind-utils && \
+RUN microdnf install bind-utils nc && \
     microdnf clean all
 EXPOSE 2112
 USER 1001
