@@ -29,7 +29,7 @@ var (
 )
 
 // Check run the checks
-func Check(values []string, interval time.Duration, worker int) error {
+func Check(values []string, interval time.Duration, timeout time.Duration, worker int) error {
 	targetsAddresses, err := toTargets(values)
 	if err != nil {
 		return err
@@ -55,6 +55,8 @@ func Check(values []string, interval time.Duration, worker int) error {
 
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
+	check.Init(timeout)
+
 	collector := startDispatcher(worker) // start up worker pool
 
 	for {
