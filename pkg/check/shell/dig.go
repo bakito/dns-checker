@@ -14,6 +14,7 @@ import (
 
 const (
 	digCommand = "dig %s"
+	NameDig    = "dig"
 )
 
 var (
@@ -22,13 +23,12 @@ var (
 )
 
 // New create a new dig command check
-func NewDig(interval time.Duration) check.Check {
+func NewDig() check.Check {
 	c := &digCheck{}
-	c.Setup(interval,
+	c.Setup(
 		"Dig succeeded",
 		"Error executing dig",
-		"dns_checker_check_dig",
-		"target")
+		NameDig)
 	return c
 }
 
@@ -40,7 +40,7 @@ func (c *digCheck) Run(ctx context.Context, address check.Address) *check.Result
 	command := fmt.Sprintf(digCommand, address.Host)
 	cmd := exec.CommandContext(ctx, "sh", "-c", command)
 	out, err := cmd.Output()
-	res := &check.Result{Values: []string{address.Host}, Err: err}
+	res := &check.Result{Err: err}
 	if err != nil {
 		return res
 	}

@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/bakito/dns-checker/version"
+
 	"github.com/bakito/dns-checker/pkg/run"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
@@ -19,6 +21,7 @@ const (
 	envLogLevel    = "LOG_LEVEL"
 	envLogJSON     = "LOG_JSON"
 	envInterval    = "INTERVAL"
+	envTimeout     = "TIMEOUT"
 	envWorker      = "WORKER"
 )
 
@@ -26,6 +29,7 @@ var (
 	logLevel    = log.InfoLevel
 	metricsPort = "2112"
 	interval    = 30 * time.Second
+	timeout     = 10 * time.Second
 	worker      = 10
 )
 
@@ -47,10 +51,18 @@ func init() {
 	if p, exists := os.LookupEnv(envMetricsPort); exists {
 		metricsPort = p
 	}
+
 	if i, exists := os.LookupEnv(envInterval); exists {
 		interval, err = time.ParseDuration(i)
 		if err != nil {
 			panic(fmt.Errorf("env var %s %q can not be parsed as duration", envInterval, i))
+		}
+	}
+
+	if to, exists := os.LookupEnv(envTimeout); exists {
+		timeout, err = time.ParseDuration(to)
+		if err != nil {
+			panic(fmt.Errorf("env var %s %q can not be parsed as duration", envTimeout, to))
 		}
 	}
 
@@ -60,7 +72,12 @@ func init() {
 			panic(fmt.Errorf("env var %s %q can not be parsed as int", envWorker, w))
 		}
 	}
-	log.WithFields(log.Fields{"interval": fmt.Sprintf("%v", interval), "workers": worker}).Info("Interval")
+	log.WithFields(log.Fields{
+		"interval": fmt.Sprintf("%v", interval),
+		"timeout":  fmt.Sprintf("%v", timeout),
+		"workers":  worker,
+		"version":  version.Version}).
+		Info("Starting")
 }
 
 func main() {
@@ -70,7 +87,8 @@ func main() {
 	if len(values) == 0 {
 		panic(fmt.Errorf("env var %s is needed", envTarget))
 	}
-	err := run.Check(values, interval, worker)
+
+	err := run.Check(values, interval, timeout, worker)
 	if err != nil {
 		panic(err)
 	}

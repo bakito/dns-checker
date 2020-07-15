@@ -13,6 +13,7 @@ import (
 
 const (
 	ncCommand = "nc -zv  %s %d"
+	NameNC    = "nc"
 )
 
 var (
@@ -20,13 +21,12 @@ var (
 )
 
 // New create a new nc command check
-func NewNc(interval time.Duration) check.Check {
+func NewNc() check.Check {
 	c := &ncCheck{}
-	c.Setup(interval,
+	c.Setup(
 		"Netcat succeeded",
 		"Error executing nc",
-		"dns_checker_check_nc",
-		"target", "port")
+		NameNC)
 	return c
 }
 
@@ -41,7 +41,7 @@ func (c *ncCheck) Run(ctx context.Context, address check.Address) *check.Result 
 	command := fmt.Sprintf(ncCommand, address.Host, *address.Port)
 	cmd := exec.CommandContext(ctx, "sh", "-c", command)
 	out, err := cmd.CombinedOutput()
-	res := &check.Result{Values: []string{address.Host, fmt.Sprintf("%d", *address.Port)}, Err: err}
+	res := &check.Result{Err: err}
 	if err != nil {
 		return res
 	}

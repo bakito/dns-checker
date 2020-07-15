@@ -19,9 +19,9 @@ import (
 )
 
 const (
-	envManualDnsHost  = "MANUAL_DNS_HOST"
-	envRunShellChecks = "RUN_SHELL_CHECKS"
-	envLogDuration    = "LOG_DURATION"
+	envManualDnsHost = "MANUAL_DNS_HOST"
+	envEnabledChecks = "ENABLED_CHECKS"
+	envLogDuration   = "LOG_DURATION"
 )
 
 var (
@@ -29,21 +29,15 @@ var (
 )
 
 // Check run the checks
-func Check(values []string, interval time.Duration, worker int) error {
+func Check(values []string, interval time.Duration, timeout time.Duration, worker int) error {
 	targetsAddresses, err := toTargets(values)
 	if err != nil {
 		return err
 	}
 
-	checks := []check.Check{dns.New(interval), port.New(interval)}
-
-	if dnsHost, exists := os.LookupEnv(envManualDnsHost); exists {
-		checks = append(checks, manualdns.New(dnsHost, interval))
-	}
-
-	if boolEnv(envRunShellChecks) {
-		checks = append(checks, shell.NewDig(interval))
-		checks = append(checks, shell.NewNc(interval))
+	checks, err := checks()
+	if err != nil {
+		return err
 	}
 
 	sigChan := make(chan os.Signal, 1)
@@ -55,6 +49,8 @@ func Check(values []string, interval time.Duration, worker int) error {
 
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
+	check.Init(timeout)
+
 	collector := startDispatcher(worker) // start up worker pool
 
 	for {
@@ -100,7 +96,7 @@ func handleResults(ctx context.Context, ex chan execution) {
 	for {
 		select {
 		case e := <-ex:
-			e.check.Report(e.Result)
+			e.check.Report(e.Address, e.Result)
 
 		case <-ctx.Done():
 			return
@@ -122,7 +118,6 @@ func runCheck(w work, workerID int) {
 	}
 	if result != nil {
 		ex := newExecution(w.chk, w.target)
-		ex.Values = result.Values
 		if result.Duration == nil {
 			ex.Duration = &duration
 		} else {
@@ -183,4 +178,36 @@ func boolEnv(name string) bool {
 		return run
 	}
 	return false
+}
+
+func checks() ([]check.Check, error) {
+	if checks, exists := os.LookupEnv(envEnabledChecks); exists {
+		names := make(map[string]bool)
+		for _, c := range strings.Split(checks, check.Separator) {
+			names[strings.TrimSpace(c)] = true
+		}
+
+		var enabled []check.Check
+		for n := range names {
+			switch n {
+			case dns.Name:
+				enabled = append(enabled, dns.New())
+			case port.Name:
+				enabled = append(enabled, port.New())
+			case manualdns.Name:
+				if dnsHost, exists := os.LookupEnv(envManualDnsHost); exists {
+					enabled = append(enabled, manualdns.New(dnsHost))
+				} else {
+					return nil, fmt.Errorf("%q must be defined to use %s check", envManualDnsHost, manualdns.Name)
+				}
+			case shell.NameDig:
+				enabled = append(enabled, shell.NewDig())
+			case shell.NameNC:
+				enabled = append(enabled, shell.NewNc())
+			}
+		}
+		return enabled, nil
+	} else {
+		return []check.Check{dns.New(), port.New()}, nil
+	}
 }
