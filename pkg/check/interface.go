@@ -8,6 +8,7 @@ import (
 type Check interface {
 	Run(ctx context.Context, address Address) *Result
 	Report(result Result)
+	Name() string
 }
 
 // Result check result

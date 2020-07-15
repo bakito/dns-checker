@@ -22,6 +22,7 @@ import (
 const (
 	envManualDnsHost = "MANUAL_DNS_HOST"
 	envRunDig        = "RUN_DIG"
+	envDebugDuration = "DEBUG_DURATION"
 )
 
 var (
@@ -41,10 +42,8 @@ func Check(values []string, interval time.Duration) error {
 		checks = append(checks, manualdns.New(dnsHost, interval))
 	}
 
-	if val, exists := os.LookupEnv(envRunDig); exists {
-		if run, _ := strconv.ParseBool(val); run {
-			checks = append(checks, shell.NewDig(interval))
-		}
+	if boolEnv(envRunDig) {
+		checks = append(checks, shell.NewDig(interval))
 	}
 
 	sigChan := make(chan os.Signal, 1)
@@ -117,17 +116,27 @@ func runChecks(ctx context.Context, interval time.Duration, resultsChan chan exe
 				defer cancel()
 
 				start := time.Now()
-
 				result := chk.Run(ctx, target)
 				elapsed := time.Since(start)
 
 				if result != nil {
 					ex := newExecution(chk, target)
 					ex.Values = result.Values
+					dur := float64(elapsed.Nanoseconds()) / 1000000.
 					if result.Duration == nil {
-						dur := float64(elapsed.Nanoseconds()) / 1000000.
 						ex.Duration = &dur
 					} else {
+						if boolEnv(envDebugDuration) {
+							l := log.WithFields(log.Fields{
+								"name":               chk.Name(),
+								"host":               target.Host,
+								"check-duration":     *result.Duration,
+								"execution-duration": dur})
+							if target.Port != nil {
+								l = l.WithField("port", *target.Port)
+							}
+							l.Info("debug duration")
+						}
 						ex.Duration = result.Duration
 					}
 					ex.Err = result.Err
@@ -166,4 +175,12 @@ func fromEnv(in string) string {
 		return os.Getenv(match[1])
 	}
 	return in
+}
+
+func boolEnv(name string) bool {
+	if val, exists := os.LookupEnv(name); exists {
+		run, _ := strconv.ParseBool(val)
+		return run
+	}
+	return false
 }

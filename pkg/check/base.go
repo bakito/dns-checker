@@ -45,6 +45,11 @@ type BaseCheck struct {
 	labels          []string
 }
 
+// Name get the name of the check
+func (c *BaseCheck) Name() string {
+	return c.name
+}
+
 // Setup setup the check
 func (c *BaseCheck) Setup(interval time.Duration, ok string, nok string, metricName string, labels ...string) {
 
