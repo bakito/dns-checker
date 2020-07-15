@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/bakito/dns-checker/version"
 	"net/http"
 	"os"
 	"strconv"
@@ -60,7 +61,11 @@ func init() {
 			panic(fmt.Errorf("env var %s %q can not be parsed as int", envWorker, w))
 		}
 	}
-	log.WithFields(log.Fields{"interval": fmt.Sprintf("%v", interval), "workers": worker}).Info("Interval")
+	log.WithFields(log.Fields{
+		"interval": fmt.Sprintf("%v", interval),
+		"workers":  worker,
+		"version":  version.Version}).
+		Info("Interval")
 }
 
 func main() {
