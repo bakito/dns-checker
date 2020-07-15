@@ -39,7 +39,6 @@ var (
 	currObjectives map[float64]float64
 	currBuckets    []float64
 
-	successMetric   *prometheus.GaugeVec
 	errorMetric     *prometheus.GaugeVec
 	durationMetric  *prometheus.GaugeVec
 	summaryMetric   *prometheus.SummaryVec
@@ -48,10 +47,6 @@ var (
 
 func Init(timeout time.Duration) {
 	labels := []string{"target", "port", "check_name", "version"}
-	successMetric = promauto.NewGaugeVec(prometheus.GaugeOpts{
-		Name: metricName,
-		Help: "Result of the check 0 = error, 1 = OK",
-	}, labels)
 	errorMetric = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Name: metricErrorName,
 		Help: "Check resulted in an error; 1 = error, 0 = OK",
@@ -114,11 +109,9 @@ func (c *BaseCheck) Report(address Address, result Result) {
 	l := log.WithFields(fields)
 	if result.Err != nil {
 		l.Warnf("%s : %v", c.MessageNOK, result.Err)
-		successMetric.WithLabelValues(values...).Set(0)
 		errorMetric.WithLabelValues(values...).Set(1)
 	} else {
 		l.Debug(c.MessageOK)
-		successMetric.WithLabelValues(values...).Set(1)
 		errorMetric.WithLabelValues(values...).Set(0)
 	}
 	durationMetric.WithLabelValues(values...).Set(duration)

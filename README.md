@@ -33,7 +33,6 @@ Exposes metrics under localhost:2112/metrics
 
 | Key | Description  
 | :---: | --- |
-| dns_checker_check | The result of the checks 1 OK / 0 error |
 | dns_checker_check_error | check resulted in an error 1 = error /  0 = OK |
 | dns_checker_check_duration | The duration result of the check in milliseconds|
 | dns_checker_check_summary | The summary metric of the duration|
