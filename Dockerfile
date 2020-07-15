@@ -19,7 +19,7 @@ FROM registry.access.redhat.com/ubi8/ubi-minimal:latest
 
 LABEL maintainer="bakito <github@bakito.ch>"
 
-RUN microdnf install bind-utils && \
+RUN microdnf install bind-utils nc && \
     microdnf clean all
 EXPOSE 2112
 USER 1001

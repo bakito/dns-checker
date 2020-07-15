@@ -20,9 +20,9 @@ import (
 )
 
 const (
-	envManualDnsHost = "MANUAL_DNS_HOST"
-	envRunDig        = "RUN_DIG"
-	envDebugDuration = "DEBUG_DURATION"
+	envManualDnsHost  = "MANUAL_DNS_HOST"
+	envRunShellChecks = "RUN_SHELL_CHECKS"
+	envLogDuration    = "LOG_DURATION"
 )
 
 var (
@@ -42,8 +42,9 @@ func Check(values []string, interval time.Duration) error {
 		checks = append(checks, manualdns.New(dnsHost, interval))
 	}
 
-	if boolEnv(envRunDig) {
+	if boolEnv(envRunShellChecks) {
 		checks = append(checks, shell.NewDig(interval))
+		checks = append(checks, shell.NewNc(interval))
 	}
 
 	sigChan := make(chan os.Signal, 1)
@@ -119,23 +120,15 @@ func runChecks(ctx context.Context, interval time.Duration, resultsChan chan exe
 				result := chk.Run(ctx, target)
 				duration := time.Since(start)
 
+				if log.GetLevel() > log.InfoLevel || boolEnv(envLogDuration) {
+					logDuration(chk, target, result, duration)
+				}
 				if result != nil {
 					ex := newExecution(chk, target)
 					ex.Values = result.Values
 					if result.Duration == nil {
 						ex.Duration = &duration
 					} else {
-						if boolEnv(envDebugDuration) {
-							l := log.WithFields(log.Fields{
-								"name":               chk.Name(),
-								"host":               target.Host,
-								"check-duration":     float64(*result.Duration) / float64(time.Millisecond),
-								"execution-duration": float64(duration) / float64(time.Millisecond)})
-							if target.Port != nil {
-								l = l.WithField("port", *target.Port)
-							}
-							l.Info("debug duration")
-						}
 						ex.Duration = result.Duration
 					}
 					ex.Err = result.Err
@@ -146,6 +139,20 @@ func runChecks(ctx context.Context, interval time.Duration, resultsChan chan exe
 		}
 	}
 	wg.Wait()
+}
+
+func logDuration(chk check.Check, target check.Address, result *check.Result, duration time.Duration) {
+	l := log.WithFields(log.Fields{
+		"name":     chk.Name(),
+		"host":     target.Host,
+		"duration": float64(duration) / float64(time.Millisecond)})
+	if result.Duration != nil {
+		l = log.WithField("check-duration", float64(*result.Duration)/float64(time.Millisecond))
+	}
+	if target.Port != nil {
+		l = l.WithField("port", *target.Port)
+	}
+	l.Info("check executed")
 }
 
 func toTarget(in string) (check.Address, error) {
