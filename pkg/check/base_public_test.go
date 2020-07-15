@@ -10,14 +10,14 @@ import (
 )
 
 func Test_Setup_Report(t *testing.T) {
+	check.Init(time.Second)
 	bc := check.BaseCheck{}
-	bc.Setup(5*time.Second, "ok", "nok", "metricName", "labels1", "label2")
+	bc.Setup(5*time.Second, "ok", "nok", "metricName")
 
 	assert.Assert(t, is.Equal(bc.MessageOK, "ok"))
 	assert.Assert(t, is.Equal(bc.MessageNOK, "nok"))
 	duration := 1 * time.Second
-	bc.Report(check.Result{
+	bc.Report(check.Address{}, check.Result{
 		Duration: &duration,
-		Values:   []string{"a", "b"},
 	})
 }

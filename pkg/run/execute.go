@@ -100,7 +100,7 @@ func handleResults(ctx context.Context, ex chan execution) {
 	for {
 		select {
 		case e := <-ex:
-			e.check.Report(e.Result)
+			e.check.Report(e.Address, e.Result)
 
 		case <-ctx.Done():
 			return
@@ -122,7 +122,6 @@ func runCheck(w work, workerID int) {
 	}
 	if result != nil {
 		ex := newExecution(w.chk, w.target)
-		ex.Values = result.Values
 		if result.Duration == nil {
 			ex.Duration = &duration
 		} else {

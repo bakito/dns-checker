@@ -27,8 +27,7 @@ func NewDig(interval time.Duration) check.Check {
 	c.Setup(interval,
 		"Dig succeeded",
 		"Error executing dig",
-		"dns_checker_check_dig",
-		"target")
+		"dig")
 	return c
 }
 
@@ -40,7 +39,7 @@ func (c *digCheck) Run(ctx context.Context, address check.Address) *check.Result
 	command := fmt.Sprintf(digCommand, address.Host)
 	cmd := exec.CommandContext(ctx, "sh", "-c", command)
 	out, err := cmd.Output()
-	res := &check.Result{Values: []string{address.Host}, Err: err}
+	res := &check.Result{Err: err}
 	if err != nil {
 		return res
 	}

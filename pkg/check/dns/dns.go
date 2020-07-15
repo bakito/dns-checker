@@ -14,8 +14,7 @@ func New(interval time.Duration) check.Check {
 	c.Setup(interval,
 		"Host resolved",
 		"Error resolving host",
-		"dns_checker_check_dns",
-		"target")
+		"dns")
 	return c
 }
 
@@ -25,5 +24,5 @@ type dnsCheck struct {
 
 func (c *dnsCheck) Run(ctx context.Context, address check.Address) *check.Result {
 	_, err := net.DefaultResolver.LookupHost(ctx, address.Host)
-	return &check.Result{Values: []string{address.Host}, Err: err}
+	return &check.Result{Err: err}
 }

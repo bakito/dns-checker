@@ -8,13 +8,12 @@ import (
 // Check interface for checks
 type Check interface {
 	Run(ctx context.Context, address Address) *Result
-	Report(result Result)
+	Report(address Address, result Result)
 	Name() string
 }
 
 // Result check result
 type Result struct {
-	Values   []string
 	Duration *time.Duration
 	Err      error
 	TimedOut bool

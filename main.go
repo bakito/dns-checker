@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/bakito/dns-checker/version"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/bakito/dns-checker/version"
 
 	"github.com/bakito/dns-checker/pkg/run"
 	"github.com/prometheus/client_golang/prometheus/promhttp"

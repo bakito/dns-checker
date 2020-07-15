@@ -15,8 +15,7 @@ func New(interval time.Duration) check.Check {
 	c.Setup(interval,
 		"Probe was successful",
 		"Error probing",
-		"dns_checker_probe_port",
-		"target", "port")
+		"dns_checker_probe_port")
 	return c
 }
 
@@ -33,5 +32,5 @@ func (c *probeCheck) Run(ctx context.Context, address check.Address) *check.Resu
 	if conn != nil {
 		_ = conn.Close()
 	}
-	return &check.Result{Values: []string{address.Host, fmt.Sprintf("%d", *address.Port)}, Err: err}
+	return &check.Result{Err: err}
 }
