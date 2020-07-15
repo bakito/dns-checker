@@ -20,9 +20,9 @@ import (
 )
 
 const (
-	envManualDnsHost = "MANUAL_DNS_HOST"
-	envRunDig        = "RUN_DIG"
-	envLogDuration   = "LOG_DURATION"
+	envManualDnsHost  = "MANUAL_DNS_HOST"
+	envRunShellChecks = "RUN_SHELL_CHECKS"
+	envLogDuration    = "LOG_DURATION"
 )
 
 var (
@@ -42,7 +42,7 @@ func Check(values []string, interval time.Duration) error {
 		checks = append(checks, manualdns.New(dnsHost, interval))
 	}
 
-	if boolEnv(envRunDig) {
+	if boolEnv(envRunShellChecks) {
 		checks = append(checks, shell.NewDig(interval))
 		checks = append(checks, shell.NewNc(interval))
 	}
