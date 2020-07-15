@@ -2,6 +2,7 @@ package check
 
 import (
 	"context"
+	"time"
 )
 
 // Check interface for checks
@@ -14,7 +15,7 @@ type Check interface {
 // Result check result
 type Result struct {
 	Values   []string
-	Duration *float64
+	Duration *time.Duration
 	Err      error
 	TimedOut bool
 }

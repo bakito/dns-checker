@@ -46,7 +46,8 @@ func (c *shellCheck) Run(ctx context.Context, address check.Address) *check.Resu
 	res := &check.Result{Values: []string{address.Host}, Err: err}
 	if queryTimePattern.MatchString(string(out)) {
 		m := queryTimePattern.FindStringSubmatch(string(out))
-		dur, _ := strconv.ParseFloat(m[1], 64)
+		qt, _ := strconv.ParseFloat(m[1], 64)
+		dur := time.Duration(qt) * time.Millisecond
 		res.Duration = &dur
 	} else {
 		log.WithField("command", "dig").Debugf("error parsing query time")

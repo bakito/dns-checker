@@ -117,21 +117,20 @@ func runChecks(ctx context.Context, interval time.Duration, resultsChan chan exe
 
 				start := time.Now()
 				result := chk.Run(ctx, target)
-				elapsed := time.Since(start)
+				duration := time.Since(start)
 
 				if result != nil {
 					ex := newExecution(chk, target)
 					ex.Values = result.Values
-					dur := float64(elapsed.Nanoseconds()) / 1000000.
 					if result.Duration == nil {
-						ex.Duration = &dur
+						ex.Duration = &duration
 					} else {
 						if boolEnv(envDebugDuration) {
 							l := log.WithFields(log.Fields{
 								"name":               chk.Name(),
 								"host":               target.Host,
-								"check-duration":     *result.Duration,
-								"execution-duration": dur})
+								"check-duration":     result.Duration,
+								"execution-duration": duration})
 							if target.Port != nil {
 								l = l.WithField("port", *target.Port)
 							}

@@ -86,9 +86,10 @@ func (c *BaseCheck) Setup(interval time.Duration, ok string, nok string, metricN
 // Report report the check results
 func (c *BaseCheck) Report(result Result) {
 
+	duration := float64(*result.Duration) / float64(time.Millisecond)
 	fields := log.Fields{}
 	fields["name"] = c.name
-	fields["duration"] = fmt.Sprintf("%vms", *result.Duration)
+	fields["duration"] = fmt.Sprintf("%vms", duration)
 
 	for i, v := range result.Values {
 		fields[c.labels[i]] = v
@@ -104,9 +105,9 @@ func (c *BaseCheck) Report(result Result) {
 		c.SuccessMetric.WithLabelValues(result.Values...).Set(1)
 		c.ErrorMetric.WithLabelValues(result.Values...).Set(0)
 	}
-	c.DurationMetric.WithLabelValues(result.Values...).Set(*result.Duration)
-	c.SummaryMetric.WithLabelValues(result.Values...).Observe(*result.Duration)
-	c.HistogramMetric.WithLabelValues(result.Values...).Observe(*result.Duration)
+	c.DurationMetric.WithLabelValues(result.Values...).Set(duration)
+	c.SummaryMetric.WithLabelValues(result.Values...).Observe(duration)
+	c.HistogramMetric.WithLabelValues(result.Values...).Observe(duration)
 }
 
 func objectives() map[float64]float64 {
