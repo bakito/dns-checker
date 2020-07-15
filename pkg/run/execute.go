@@ -141,7 +141,7 @@ func logDuration(chk check.Check, target check.Address, result *check.Result, du
 		"worker":   result.WorkerId,
 		"duration": float64(duration) / float64(time.Millisecond)})
 	if result.Duration != nil {
-		l = log.WithField("check-duration", float64(*result.Duration)/float64(time.Millisecond))
+		l = l.WithField("check-duration", float64(*result.Duration)/float64(time.Millisecond))
 	}
 	if target.Port != nil {
 		l = l.WithField("port", *target.Port)
