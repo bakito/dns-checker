@@ -21,6 +21,7 @@ docker run -p 2112:2112 -e TARGET=<target-host> quay.io/bakito/dns-checker
 | METRICS_PORT | The port for the metrics service | O | 2112 |
 | LOG_LEVEL | The log level (panic, fatal, error, warn, info, debug, trace)| O | info |
 | LOG_JSON | Enables json log format if set to true | O | false |
+| LOG_DURATION | log the duration of all check if set to true | O | false |
 | ENABLED_CHECKS | ',' separated list of checks to enable (dns, probe-port, dig, nc, manual-dns) | O | "dns,probe-port" |
 | MANUAL_DNS_HOST | dns host to be used form manual-dns check | O |  |
 | METRICS_HISTOGRAM_BUCKETS | Custom histogram metric buckets  | O | "0.002,0.005,0.01,0.025,0.05,0.1,0.25,0.5,1,2.5,5,10,20" |
