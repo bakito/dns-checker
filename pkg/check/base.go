@@ -55,7 +55,7 @@ func Init(timeout time.Duration) {
 	}, labels)
 	durationMetric = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Name: metricDurationName,
-		Help: fmt.Sprintf("The duration of %s in ms", metricName),
+		Help: "The duration of the check in ms",
 	}, labels)
 	summaryMetric = promauto.NewSummaryVec(prometheus.SummaryOpts{
 		Name:       metricSummaryName,
@@ -87,7 +87,7 @@ func (c *BaseCheck) Setup(ok string, nok string, name string) {
 	c.MessageOK = ok
 	c.MessageNOK = nok
 
-	log.WithField("name", metricName).Info("Setup check")
+	log.WithField("name", name).Info("Setup check")
 }
 
 // Report report the check results
