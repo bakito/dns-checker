@@ -23,14 +23,10 @@ const (
 	//  E.g: "0.002,0.005,0.01,0.025,0.05,0.1,0.25,0.5,1,2.5,5,10,20"
 	envMetricHistogramBuckets = "METRICS_HISTOGRAM_BUCKETS"
 
+	envMetricName = "METRICS_NAME"
+
 	// Separator list separator
 	Separator = ","
-
-	metricName          = "dns_checker_check"
-	metricErrorName     = metricName + "_error"
-	metricDurationName  = metricName + "_duration"
-	metricSummaryName   = metricName + "_summary"
-	metricHistogramName = metricName + "_histogram"
 )
 
 var (
@@ -44,10 +40,26 @@ var (
 	durationMetric  *prometheus.GaugeVec
 	summaryMetric   *prometheus.SummaryVec
 	histogramMetric *prometheus.HistogramVec
+
+	metricName          = "dns_checker_check"
+	metricErrorName     string
+	metricDurationName  string
+	metricSummaryName   string
+	metricHistogramName string
 )
 
 // Init initialize the metrics vectors
 func Init(timeout time.Duration) {
+
+	if name, ok := os.LookupEnv(envMetricName); ok {
+		metricName = name
+	}
+
+	metricErrorName = metricName + "_error"
+	metricDurationName = metricName + "_duration"
+	metricSummaryName = metricName + "_summary"
+	metricHistogramName = metricName + "_histogram"
+
 	labels := []string{"target", "port", "check_name", "version"}
 	errorMetric = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Name: metricErrorName,
@@ -55,7 +67,7 @@ func Init(timeout time.Duration) {
 	}, labels)
 	durationMetric = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Name: metricDurationName,
-		Help: fmt.Sprintf("The duration of %s in ms", metricName),
+		Help: "The duration of the check in ms",
 	}, labels)
 	summaryMetric = promauto.NewSummaryVec(prometheus.SummaryOpts{
 		Name:       metricSummaryName,
@@ -87,7 +99,7 @@ func (c *BaseCheck) Setup(ok string, nok string, name string) {
 	c.MessageOK = ok
 	c.MessageNOK = nok
 
-	log.WithField("name", metricName).Info("Setup check")
+	log.WithField("name", name).Info("Setup check")
 }
 
 // Report report the check results
