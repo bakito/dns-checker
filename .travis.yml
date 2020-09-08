@@ -6,12 +6,6 @@ os:
 services:
   - docker
 
-before_script:
-  - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.27.0
-  - go get -u golang.org/x/lint/golint
 script:
-  - golangci-lint run ./...
-  - golint ./...
-  - go test ./... -coverprofile=coverage.out
-  - go tool cover -func=coverage.out
+  - make test
   - go build ./...
