@@ -110,13 +110,13 @@ func runCheck(w work, workerID int) {
 
 	start := time.Now()
 	result := w.chk.Run(ctx, w.target)
-	result.WorkerID = workerID
 	duration := time.Since(start)
 
 	if log.GetLevel() > log.InfoLevel || boolEnv(envLogDuration) {
-		logDuration(w.chk, w.target, result, duration)
+		logDuration(w.chk, workerID, w.target, result, duration)
 	}
 	if result != nil {
+		result.WorkerID = workerID
 		ex := newExecution(w.chk, w.target)
 		if result.Duration == nil {
 			ex.Duration = &duration
@@ -129,13 +129,13 @@ func runCheck(w work, workerID int) {
 	}
 }
 
-func logDuration(chk check.Check, target check.Address, result *check.Result, duration time.Duration) {
+func logDuration(chk check.Check, workerID int, target check.Address, result *check.Result, duration time.Duration) {
 	l := log.WithFields(log.Fields{
 		"name":     chk.Name(),
 		"host":     target.Host,
-		"worker":   result.WorkerID,
+		"worker":   workerID,
 		"duration": float64(duration) / float64(time.Millisecond)})
-	if result.Duration != nil {
+	if result != nil && result.Duration != nil {
 		l = l.WithField("check-duration", float64(*result.Duration)/float64(time.Millisecond))
 	}
 	if target.Port != nil {
