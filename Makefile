@@ -17,6 +17,8 @@ test: tidy fmt vet
 	go tool cover -func=coverage.out
 
 release: tools
+	@version=$$(semver); \
+	git tag -s $$version -m"Release $$version"
 	goreleaser --rm-dist
 
 test-release: tools
