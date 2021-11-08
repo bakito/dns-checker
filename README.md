@@ -9,7 +9,7 @@ Check and reports host names and port.
 ## Run
 
 ```bash
-docker run -p 2112:2112 -e TARGET=<target-host> quay.io/bakito/dns-checker
+docker run -p 2112:2112 -e TARGET=<target-host> ghcr.io/bakito/dns-checker
 ```
 
 ## Env Variables
