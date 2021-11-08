@@ -1,4 +1,4 @@
-FROM quay.io/bitnami/golang:1.15 as builder
+FROM golang:1.15 as builder
 
 WORKDIR /build
 
