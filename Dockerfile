@@ -13,7 +13,7 @@ ENV GOPROXY=https://goproxy.io \
     GOARCH=amd64
 
 RUN go build -a -installsuffix cgo -ldflags="-w -s -X github.com/bakito/dns-checker/version.Version=${VERSION}" -o dns-checker && \
-    upx --ultra-brute -q dns-checker
+    upx -q dns-checker
 
 # application image
 FROM registry.access.redhat.com/ubi8/ubi-minimal:latest
