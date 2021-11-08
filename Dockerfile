@@ -1,5 +1,6 @@
 FROM golang:1.15 as builder
 
+ARG VERSION=main
 WORKDIR /build
 
 RUN apt-get update && apt-get install -y upx
@@ -11,9 +12,7 @@ ENV GOPROXY=https://goproxy.io \
     GOOS=linux \
     GOARCH=amd64
 
-RUN if GIT_TAG=$(git describe --tags --abbrev=0 --exact-match 2>/dev/null); then VERSION=${GIT_TAG}; else VERSION=$(git rev-parse --short HEAD); fi && \
-    echo Building version ${VERSION} && \
-    go build -a -installsuffix cgo -ldflags="-w -s -X github.com/bakito/dns-checker/version.Version=${VERSION}" -o dns-checker && \
+RUN go build -a -installsuffix cgo -ldflags="-w -s -X github.com/bakito/dns-checker/version.Version=${VERSION}" -o dns-checker && \
     upx --ultra-brute -q dns-checker
 
 # application image
