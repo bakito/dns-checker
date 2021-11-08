@@ -27,7 +27,7 @@ jobs:
         if: ${{ github.event.release.tag_name != '' }}
         with:
           push: true
-          tags: ghcr.io/bakito/batch-job-controller:latest,ghcr.io/bakito/batch-job-controller:${{ github.event.release.tag_name }}
+          tags: ghcr.io/bakito/dns-checker:latest,ghcr.io/bakito/dns-checker:${{ github.event.release.tag_name }}
           platforms: linux/amd64
           build-args: VERSION=${{ github.event.release.tag_name }}
 
@@ -37,7 +37,7 @@ jobs:
         if: ${{ github.event.release.tag_name == '' }}
         with:
           push: true
-          tags: ghcr.io/bakito/batch-job-controller:master
+          tags: ghcr.io/bakito/dns-checker:master
           platforms: linux/amd64
           build-args: VERSION=master
       - name: Image digest
