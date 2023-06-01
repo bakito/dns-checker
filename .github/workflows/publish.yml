@@ -29,6 +29,7 @@ jobs:
           push: true
           tags: ghcr.io/bakito/dns-checker:latest,ghcr.io/bakito/dns-checker:${{ github.event.release.tag_name }}
           platforms: linux/amd64
+          provenance: false
           build-args: VERSION=${{ github.event.release.tag_name }}
 
       - name: Build and push master
@@ -39,6 +40,7 @@ jobs:
           push: true
           tags: ghcr.io/bakito/dns-checker:master
           platforms: linux/amd64
+          provenance: false
           build-args: VERSION=master
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
