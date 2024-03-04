@@ -1,4 +1,4 @@
-FROM golang:1.17 as builder
+FROM golang:1.22-bullseye as builder
 
 ARG VERSION=main
 WORKDIR /build
