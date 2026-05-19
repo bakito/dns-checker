@@ -73,8 +73,8 @@ func Check(values []string, interval time.Duration, timeout time.Duration, worke
 func toTargets(values []string) ([]check.Address, error) {
 	var targetsAddresses []check.Address
 	for _, value := range values {
-		targets := strings.Split(value, ",")
-		for _, t := range targets {
+		targets := strings.SplitSeq(value, ",")
+		for t := range targets {
 			target, err := toTarget(t)
 			if err != nil {
 				return nil, err
@@ -183,7 +183,7 @@ func boolEnv(name string) bool {
 func checks() ([]check.Check, error) {
 	if checks, exists := os.LookupEnv(envEnabledChecks); exists {
 		names := make(map[string]bool)
-		for _, c := range strings.Split(checks, check.Separator) {
+		for c := range strings.SplitSeq(checks, check.Separator) {
 			names[strings.TrimSpace(c)] = true
 		}
 

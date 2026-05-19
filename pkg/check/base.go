@@ -142,8 +142,8 @@ func objectives() map[float64]float64 {
 
 	if value, exists := os.LookupEnv(envMetricSummaryObjectives); exists {
 		custom := make(map[float64]float64)
-		objectives := strings.Split(value, Separator)
-		for _, o := range objectives {
+		objectives := strings.SplitSeq(value, Separator)
+		for o := range objectives {
 			objective := strings.Split(o, ":")
 			if len(objective) == 2 {
 				a, err := strconv.ParseFloat(strings.TrimSpace(objective[0]), 64)
@@ -178,8 +178,8 @@ func buckets(timeout time.Duration) []float64 {
 
 	if value, exists := os.LookupEnv(envMetricHistogramBuckets); exists {
 		var custom []float64
-		objectives := strings.Split(value, Separator)
-		for _, o := range objectives {
+		objectives := strings.SplitSeq(value, Separator)
+		for o := range objectives {
 			a, err := strconv.ParseFloat(strings.TrimSpace(o), 64)
 			if err != nil {
 				log.WithFields(log.Fields{"env": envMetricHistogramBuckets, "value": value, "default": defaultBuckets}).

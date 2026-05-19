@@ -16,8 +16,7 @@ func Test_Setup_Report(t *testing.T) {
 
 	assert.Assert(t, is.Equal(bc.MessageOK, "ok"))
 	assert.Assert(t, is.Equal(bc.MessageNOK, "nok"))
-	duration := 1 * time.Second
 	bc.Report(check.Address{}, check.Result{
-		Duration: &duration,
+		Duration: new(1 * time.Second),
 	})
 }

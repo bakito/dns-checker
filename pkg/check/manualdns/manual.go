@@ -103,8 +103,8 @@ type dnsQuestion struct {
 func (q dnsQuestion) encode() []byte {
 	var buffer bytes.Buffer
 
-	domainParts := strings.Split(q.Domain, ".")
-	for _, part := range domainParts {
+	domainParts := strings.SplitSeq(q.Domain, ".")
+	for part := range domainParts {
 		if err := binary.Write(&buffer, binary.BigEndian, byte(len(part))); err != nil {
 			log.Fatalf("Error binary.Write(..) for '%s': '%s'", part, err)
 		}
