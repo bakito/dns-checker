@@ -1,3 +1,6 @@
+# Include toolbox tasks
+include ./.toolbox.mk
+
 # Run go fmt against code
 fmt:
 	go fmt ./...
@@ -16,15 +19,11 @@ test: tidy fmt vet
 	go test ./...  -coverprofile=coverage.out
 	go tool cover -func=coverage.out
 
-release: tools
-	@version=$$(semver); \
-	git tag -s $$version -m"Release $$version"
-	goreleaser --rm-dist
+release: tb.semver tb.goreleaser
+	@version=$$($(TB_SEMVER)); \
+	git tag -s $$version -m"Release $$version"; \
+	git push origin $$version
+	PATH=$(TB_LOCALBIN):$${PATH} $(TB_GORELEASER) --clean --parallelism 2
 
-test-release: tools
-	goreleaser --skip-publish --snapshot --rm-dist
-
-tools:
-ifeq (, $(shell which goreleaser))
- $(shell go get github.com/goreleaser/goreleaser)
-endif
+test-release: tb.goreleaser 
+	PATH=$(TB_LOCALBIN):$${PATH} $(TB_GORELEASER) --skip=publish --snapshot --clean --parallelism 2
