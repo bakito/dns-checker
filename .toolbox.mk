@@ -17,7 +17,7 @@ TB_SEMVER ?= $(TB_LOCALBIN)/semver
 
 ## Tool Versions
 # renovate: packageName=github.com/goreleaser/goreleaser/v2
-TB_GORELEASER_VERSION ?= v2.17.0
+TB_GORELEASER_VERSION ?= v2.17.1
 TB_GORELEASER_VERSION_NUM ?= $(call STRIP_V,$(TB_GORELEASER_VERSION))
 # renovate: packageName=github.com/bakito/semver
 TB_SEMVER_VERSION ?= v1.1.10
