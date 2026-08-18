@@ -4,7 +4,7 @@ go 1.26.3
 
 require (
 	github.com/prometheus/client_golang v1.24.1
-	github.com/sirupsen/logrus v1.9.4
+	github.com/sirupsen/logrus v1.10.0
 	gotest.tools v2.2.0+incompatible
 )
 
