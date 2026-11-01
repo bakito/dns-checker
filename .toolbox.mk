@@ -20,7 +20,7 @@ TB_SEMVER ?= $(TB_LOCALBIN)/semver
 TB_GORELEASER_VERSION ?= v2.19.0
 TB_GORELEASER_VERSION_NUM ?= $(call STRIP_V,$(TB_GORELEASER_VERSION))
 # renovate: packageName=github.com/bakito/semver
-TB_SEMVER_VERSION ?= v1.1.10
+TB_SEMVER_VERSION ?= v1.1.13
 TB_SEMVER_VERSION_NUM ?= $(call STRIP_V,$(TB_SEMVER_VERSION))
 
 ## Tool Installer
